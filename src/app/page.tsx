@@ -164,7 +164,7 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.storyCard}>
-            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 2" className={styles.storyImg} />
+            <img src="/images/meaningful_conversations.png" alt="Couple 2" className={styles.storyImg} />
             <div className={styles.storyContent}>
               <h3>Meaningful Conversations</h3>
               <p>Synqra's matching system helped me find someone who actually aligned with my values. No more pointless swiping.</p>
