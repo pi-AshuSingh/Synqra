@@ -1,7 +1,0 @@
-{
-  "/discover/page": "app/discover/page.js",
-  "/login/page": "app/login/page.js",
-  "/onboarding/page": "app/onboarding/page.js",
-  "/page": "app/page.js",
-  "/premium/page": "app/premium/page.js"
-}
