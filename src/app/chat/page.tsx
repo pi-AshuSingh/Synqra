@@ -14,6 +14,7 @@ type Message = {
   text: string;
   senderId: string;
   createdAt: any;
+  isRead?: boolean;
 };
 
 function ChatContent() {
@@ -58,8 +59,15 @@ function ChatContent() {
 
     const unsubscribeMsgs = onSnapshot(q, (snapshot) => {
       const msgs: Message[] = [];
-      snapshot.forEach((doc) => {
-        msgs.push({ id: doc.id, ...doc.data() } as Message);
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        msgs.push({ id: docSnap.id, ...data } as Message);
+        
+        // Mark as read if I am receiving this message and it's not read yet
+        if (data.senderId !== currentUser.uid && data.isRead !== true) {
+          const { updateDoc } = require("firebase/firestore");
+          updateDoc(doc(db, "chats", chatId, "messages", docSnap.id), { isRead: true });
+        }
       });
       setMessages(msgs);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
@@ -115,7 +123,8 @@ function ChatContent() {
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text: textToSend,
         senderId: currentUser.uid,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        isRead: false
       });
     } catch (err) {
       console.error("Error sending message", err);
@@ -192,16 +201,21 @@ function ChatContent() {
 
       <div className={styles.chatArea}>
         {messages.length === 0 ? (
-          <div style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "2rem" }}>
-            This is the start of your conversation with {targetName}.
+          <div className="flex-center" style={{ height: "100%", color: "var(--text-muted)", flexDirection: "column" }}>
+            <p>Say hi to {targetName}!</p>
           </div>
         ) : (
           messages.map((msg) => {
-            const isSent = msg.senderId === currentUser?.uid;
+            const isMe = msg.senderId === currentUser?.uid;
             return (
-              <div key={msg.id} className={`${styles.messageRow} ${isSent ? styles.sent : styles.received}`}>
+              <div key={msg.id} className={`${styles.messageRow} ${isMe ? styles.sent : styles.received}`}>
                 <div className={styles.message}>
                   {msg.text}
+                  {isMe && (
+                    <div style={{ fontSize: "0.6rem", textAlign: "right", marginTop: "4px", opacity: 0.8, color: msg.isRead ? "#60a5fa" : "inherit" }}>
+                      {msg.isRead ? "✓✓" : "✓"}
+                    </div>
+                  )}
                 </div>
                 <div className={styles.timestamp}>
                   {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}

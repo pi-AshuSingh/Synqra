@@ -26,6 +26,8 @@ type Profile = {
   drinking?: string;
   smoking?: string;
   matchScore?: number;
+  prompt?: string;
+  promptAnswer?: string;
 };
 
 // Fallback mock profiles in case Firestore is empty or not configured yet
@@ -169,6 +171,8 @@ export default function Discover() {
           zodiac: data.zodiac || "",
           drinking: data.drinking || "",
           smoking: data.smoking || "",
+          prompt: data.prompt || "",
+          promptAnswer: data.promptAnswer || "",
           matchScore: score
         });
       });
@@ -431,6 +435,17 @@ export default function Discover() {
                     <span key={tag} className={styles.tag}>{tag}</span>
                   ))}
                 </div>
+
+                {currentProfile.prompt && currentProfile.promptAnswer && (
+                  <div style={{ marginTop: "12px", background: "rgba(255,255,255,0.05)", padding: "12px", borderRadius: "12px", border: "1px solid var(--glass-border)" }}>
+                    <div style={{ fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: "600", marginBottom: "4px" }}>
+                      {currentProfile.prompt}
+                    </div>
+                    <div style={{ fontSize: "0.95rem", fontStyle: "italic" }}>
+                      "{currentProfile.promptAnswer}"
+                    </div>
+                  </div>
+                )}
 
                 {/* Advanced Badges */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "12px" }}>

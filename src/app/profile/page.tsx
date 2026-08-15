@@ -31,6 +31,10 @@ export default function Profile() {
   const [drinking, setDrinking] = useState("");
   const [smoking, setSmoking] = useState("");
 
+  const [prompt, setPrompt] = useState("");
+  const [promptAnswer, setPromptAnswer] = useState("");
+  const [completionScore, setCompletionScore] = useState(0);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -60,6 +64,18 @@ export default function Profile() {
           setZodiac(data.zodiac || "");
           setDrinking(data.drinking || "");
           setSmoking(data.smoking || "");
+
+          setPrompt(data.prompt || "");
+          setPromptAnswer(data.promptAnswer || "");
+
+          // Calculate Completion
+          let score = 0;
+          if (data.image) score += 20;
+          if (data.bio) score += 20;
+          if (data.tags && data.tags.length > 0) score += 20;
+          if (data.height || data.zodiac || data.drinking || data.smoking) score += 20;
+          if (data.prompt && data.promptAnswer) score += 20;
+          setCompletionScore(score);
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -90,7 +106,9 @@ export default function Profile() {
         height,
         zodiac,
         drinking,
-        smoking
+        smoking,
+        prompt,
+        promptAnswer
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -160,11 +178,27 @@ export default function Profile() {
             </h3>
             <p style={{ color: "var(--text-muted)", textTransform: "capitalize" }}>{profileData.gender}</p>
             
+            {/* Profile Completion Bar */}
+            <div style={{ width: "100%", maxWidth: "300px", margin: "10px auto 0", textAlign: "left" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", marginBottom: "4px" }}>
+                <span>Profile Completion</span>
+                <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>{completionScore}%</span>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "8px", height: "8px", overflow: "hidden" }}>
+                <div style={{ width: `${completionScore}%`, background: "var(--primary-color)", height: "100%", borderRadius: "8px" }}></div>
+              </div>
+              {completionScore < 100 && (
+                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", textAlign: "center" }}>
+                  Complete your profile to get more matches!
+                </div>
+              )}
+            </div>
+
             {(!profileData.verificationStatus || profileData.verificationStatus === "none") && (
               <button 
                 onClick={handleRequestVerification}
                 className="btn-glass" 
-                style={{ marginTop: "10px", fontSize: "0.8rem", padding: "4px 8px" }}
+                style={{ marginTop: "16px", fontSize: "0.8rem", padding: "4px 8px" }}
               >
                 Request Verification
               </button>
@@ -262,6 +296,27 @@ export default function Profile() {
               value={bio}
               onChange={e => setBio(e.target.value)}
             ></textarea>
+          </div>
+
+          <div style={{ marginTop: "1.5rem" }}>
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", color: "var(--primary-color)" }}>Icebreaker Prompt</h3>
+            <div className={styles.formGroup}>
+              <select className={styles.input} value={prompt} onChange={e => setPrompt(e.target.value)} style={{ marginBottom: "10px" }}>
+                <option value="">Select a prompt</option>
+                <option value="Two truths and a lie...">Two truths and a lie...</option>
+                <option value="I geek out on...">I geek out on...</option>
+                <option value="My simple pleasures...">My simple pleasures...</option>
+                <option value="A random fact I love is...">A random fact I love is...</option>
+                <option value="First round is on me if...">First round is on me if...</option>
+              </select>
+              <textarea 
+                className={styles.input} 
+                rows={2}
+                placeholder="Write your answer..."
+                value={promptAnswer}
+                onChange={e => setPromptAnswer(e.target.value)}
+              ></textarea>
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "1rem" }}>
