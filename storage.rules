@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /profiles/{userId}/{allPaths=**} {
+      // Anyone can read profile pictures
+      allow read: if true;
+      // Only the user themselves can upload/update/delete their profile picture
+      // Must be an image file and less than 5MB
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

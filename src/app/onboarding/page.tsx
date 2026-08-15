@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth, db, storage } from "@/lib/firebase";
 import styles from "./onboarding.module.css";
+import Logo from "@/components/Logo";
 
 const AURA_TAGS = [
   "Adventurous", "Creative", "Analytical", "Spontaneous", 
   "Empathetic", "Ambitious", "Chill", "Outgoing"
+];
+
+const LOOKING_FOR_OPTIONS = [
+  "Serious Relationship",
+  "Something Casual",
+  "New Friends",
+  "Not Sure Yet"
 ];
 
 export default function Onboarding() {
@@ -25,8 +34,16 @@ export default function Onboarding() {
   // Profile state
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
+  const [city, setCity] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
   const [bio, setBio] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  
+  // Photo state
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -36,74 +53,137 @@ export default function Onboarding() {
     }
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image must be smaller than 5MB");
+        return;
+      }
+      setPhoto(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setError("");
+    }
+  };
+
   const handleNext = async () => {
     setError("");
+    
     if (step === 1) {
-      if (!name || !gender) {
+      if (!name || !gender || !age || !city || !lookingFor) {
         return setError("Please fill out all fields.");
       }
+      if (parseInt(age) < 18) {
+        return setError("You must be at least 18 years old.");
+      }
       setStep(2);
-    } else if (step === 2) {
+    } 
+    else if (step === 2) {
+      if (!photo) {
+        return setError("Please upload a profile photo.");
+      }
+      if (!bio) {
+        return setError("Please write a short bio.");
+      }
       setStep(3);
-    } else if (step === 3) {
+    } 
+    else if (step === 3) {
       if (!email || !password) {
         return setError("Please enter your email and password.");
       }
-      // Final step: Create user and save to Firestore
+      
       setLoading(true);
       try {
+        // 1. Create auth user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
         await updateProfile(user, { displayName: name });
         
-        // Save to Firestore
+        // 2. Upload photo to Firebase Storage
+        let photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"; // Fallback
+        if (photo) {
+          const storageRef = ref(storage, `profiles/${user.uid}/avatar_${Date.now()}`);
+          const snapshot = await uploadBytes(storageRef, photo);
+          photoUrl = await getDownloadURL(snapshot.ref);
+        }
+        
+        // 3. Save to Firestore
         await setDoc(doc(db, "users", user.uid), {
           name,
           email,
           gender,
+          age: parseInt(age),
+          city,
+          lookingFor,
           bio,
           tags: selectedTags,
+          image: photoUrl,
           createdAt: new Date().toISOString(),
           premium: false,
-          image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" // Placeholder for now
+          isAdmin: false
         });
         
         router.push("/discover");
       } catch (err: any) {
         setError(err.message || "An error occurred during signup.");
-      } finally {
         setLoading(false);
       }
     }
   };
 
   return (
-    <main className="flex-center" style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)" }}>
-      <div className={`glass-card ${styles.onboardingCard} animate-fade-in`}>
+    <main className="flex-center" style={{ minHeight: "100vh", backgroundColor: "var(--bg-color)", padding: "var(--spacing-lg)" }}>
+      <div className={`glass-card ${styles.onboardingCard} animate-fade-in`} style={{ maxWidth: "500px", width: "100%" }}>
+        
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+          <Logo size={40} />
+        </div>
+
         <div className={styles.progress}>
           <div className={styles.progressBar} style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
 
-        {error && <div style={{ color: "red", fontSize: "0.875rem", marginBottom: "1rem", textAlign: "center" }}>{error}</div>}
+        {error && <div style={{ color: "red", fontSize: "0.875rem", marginBottom: "1rem", textAlign: "center", background: "rgba(255,0,0,0.1)", padding: "10px", borderRadius: "8px" }}>{error}</div>}
 
         {step === 1 && (
           <div className="animate-fade-in">
-            <h2 className="text-gradient">Account & Basics</h2>
-            <p className={styles.subtitle}>Let's set up your profile.</p>
+            <h2 className="text-gradient">The Basics</h2>
+            <p className={styles.subtitle}>Who are you and what are you looking for?</p>
             
             <div className={styles.formGroup}>
               <label>First Name</label>
-              <input type="text" className={styles.input} placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)} />
+              <input type="text" className={styles.input} placeholder="Aisha" value={name} onChange={e => setName(e.target.value)} />
             </div>
             
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <div className={styles.formGroup} style={{ flex: 1 }}>
+                <label>Age</label>
+                <input type="number" className={styles.input} placeholder="24" value={age} onChange={e => setAge(e.target.value)} min="18" max="99" />
+              </div>
+              <div className={styles.formGroup} style={{ flex: 1 }}>
+                <label>Gender</label>
+                <select className={styles.input} value={gender} onChange={e => setGender(e.target.value)}>
+                  <option value="">Select</option>
+                  <option value="man">Man</option>
+                  <option value="woman">Woman</option>
+                  <option value="nonbinary">Non-binary</option>
+                </select>
+              </div>
+            </div>
+
             <div className={styles.formGroup}>
-              <label>I identify as</label>
-              <select className={styles.input} value={gender} onChange={e => setGender(e.target.value)}>
-                <option value="">Select gender</option>
-                <option value="man">Man</option>
-                <option value="woman">Woman</option>
-                <option value="nonbinary">Non-binary</option>
+              <label>City</label>
+              <input type="text" className={styles.input} placeholder="Mumbai" value={city} onChange={e => setCity(e.target.value)} />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>I'm looking for...</label>
+              <select className={styles.input} value={lookingFor} onChange={e => setLookingFor(e.target.value)}>
+                <option value="">Select connection type</option>
+                {LOOKING_FOR_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -111,9 +191,37 @@ export default function Onboarding() {
 
         {step === 2 && (
           <div className="animate-fade-in">
-            <h2 className="text-gradient">Your Vibe & Aura</h2>
-            <p className={styles.subtitle}>Write a short bio and pick your traits.</p>
+            <h2 className="text-gradient">Your Vibe</h2>
+            <p className={styles.subtitle}>Upload your best photo and write a bio.</p>
             
+            <div className={styles.formGroup} style={{ alignItems: "center" }}>
+              <label>Profile Photo</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                ref={fileInputRef} 
+                style={{ display: "none" }} 
+                onChange={handlePhotoChange} 
+              />
+              <div 
+                style={{ 
+                  width: "120px", height: "120px", borderRadius: "50%", 
+                  border: "2px dashed var(--glass-border)", display: "flex", 
+                  alignItems: "center", justifyContent: "center", 
+                  overflow: "hidden", cursor: "pointer", marginBottom: "1rem",
+                  background: "rgba(255,255,255,0.05)"
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontSize: "2rem", color: "var(--text-muted)" }}>+</span>
+                )}
+              </div>
+              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "-0.5rem" }}>Tap to upload (Max 5MB)</p>
+            </div>
+
             <div className={styles.formGroup}>
               <label>Bio</label>
               <textarea 
@@ -125,7 +233,7 @@ export default function Onboarding() {
               ></textarea>
             </div>
 
-            <div className={styles.formGroup} style={{ marginTop: "1.5rem" }}>
+            <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
               <label>Pick up to 3 traits</label>
               <div className={styles.tagsContainer} style={{ marginTop: "0.5rem" }}>
                 {AURA_TAGS.map(tag => (
@@ -144,7 +252,7 @@ export default function Onboarding() {
 
         {step === 3 && (
           <div className="animate-fade-in">
-            <h2 className="text-gradient">Save Your Profile</h2>
+            <h2 className="text-gradient">Save Profile</h2>
             <p className={styles.subtitle}>Create an account to save your progress.</p>
             
             <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
@@ -159,7 +267,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        <div className={styles.actions}>
+        <div className={styles.actions} style={{ marginTop: "2rem" }}>
           {step > 1 && (
             <button className="btn-glass" onClick={() => setStep(step - 1)} disabled={loading}>Back</button>
           )}
