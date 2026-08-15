@@ -26,6 +26,11 @@ export default function Profile() {
   const [image2, setImage2] = useState("");
   const [image3, setImage3] = useState("");
 
+  const [height, setHeight] = useState("");
+  const [zodiac, setZodiac] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -50,6 +55,11 @@ export default function Profile() {
           setImage1(data.images?.[0] || data.image || "");
           setImage2(data.images?.[1] || "");
           setImage3(data.images?.[2] || "");
+
+          setHeight(data.height || "");
+          setZodiac(data.zodiac || "");
+          setDrinking(data.drinking || "");
+          setSmoking(data.smoking || "");
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -76,7 +86,11 @@ export default function Profile() {
         minAgePref: minAge,
         maxAgePref: maxAge,
         image: image1, // fallback
-        images: newImages
+        images: newImages,
+        height,
+        zodiac,
+        drinking,
+        smoking
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -195,6 +209,49 @@ export default function Profile() {
               <option value="New Friends">New Friends</option>
               <option value="Not Sure Yet">Not Sure Yet</option>
             </select>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div className={styles.formGroup}>
+              <label>Height</label>
+              <input type="text" className={styles.input} value={height} onChange={e => setHeight(e.target.value)} />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Zodiac</label>
+              <select className={styles.input} value={zodiac} onChange={e => setZodiac(e.target.value)}>
+                <option value="">Select</option>
+                <option value="Aries">Aries</option>
+                <option value="Taurus">Taurus</option>
+                <option value="Gemini">Gemini</option>
+                <option value="Cancer">Cancer</option>
+                <option value="Leo">Leo</option>
+                <option value="Virgo">Virgo</option>
+                <option value="Libra">Libra</option>
+                <option value="Scorpio">Scorpio</option>
+                <option value="Sagittarius">Sagittarius</option>
+                <option value="Capricorn">Capricorn</option>
+                <option value="Aquarius">Aquarius</option>
+                <option value="Pisces">Pisces</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Drinking</label>
+              <select className={styles.input} value={drinking} onChange={e => setDrinking(e.target.value)}>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="Sometimes">Sometimes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Smoking</label>
+              <select className={styles.input} value={smoking} onChange={e => setSmoking(e.target.value)}>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="Sometimes">Sometimes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
           </div>
 
           <div className={styles.formGroup}>

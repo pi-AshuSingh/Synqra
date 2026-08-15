@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, query, collection, orderBy, onSnapshot, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import styles from "./page.module.css";
@@ -28,7 +28,9 @@ function ChatContent() {
   const [inputText, setInputText] = useState("");
   const [targetVerified, setTargetVerified] = useState(false);
   const [targetOnline, setTargetOnline] = useState(false);
+  const [isTargetTyping, setIsTargetTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  let typingTimeout: NodeJS.Timeout | null = null;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -54,7 +56,7 @@ function ChatContent() {
       orderBy("createdAt", "asc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeMsgs = onSnapshot(q, (snapshot) => {
       const msgs: Message[] = [];
       snapshot.forEach((doc) => {
         msgs.push({ id: doc.id, ...doc.data() } as Message);
@@ -63,7 +65,20 @@ function ChatContent() {
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     });
 
-    return () => unsubscribe();
+    // Listen for target typing status
+    const targetTypingRef = doc(db, "chats", chatId, "typing", targetId);
+    const unsubscribeTyping = onSnapshot(targetTypingRef, (snap) => {
+      if (snap.exists() && snap.data().isTyping) {
+        setIsTargetTyping(true);
+      } else {
+        setIsTargetTyping(false);
+      }
+    });
+
+    return () => {
+      unsubscribeMsgs();
+      unsubscribeTyping();
+    };
   }, [currentUser, targetId]);
 
   useEffect(() => {
@@ -93,6 +108,9 @@ function ChatContent() {
       ? `${currentUser.uid}_${targetId}` 
       : `${targetId}_${currentUser.uid}`;
 
+    // Clear my typing status
+    setDoc(doc(db, "chats", chatId, "typing", currentUser.uid), { isTyping: false });
+
     try {
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text: textToSend,
@@ -102,6 +120,25 @@ function ChatContent() {
     } catch (err) {
       console.error("Error sending message", err);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    
+    if (!currentUser || !targetId) return;
+    
+    const chatId = currentUser.uid < targetId 
+      ? `${currentUser.uid}_${targetId}` 
+      : `${targetId}_${currentUser.uid}`;
+      
+    // Set typing to true
+    setDoc(doc(db, "chats", chatId, "typing", currentUser.uid), { isTyping: true, updatedAt: serverTimestamp() });
+    
+    // Clear typing status after 2 seconds of no input
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      setDoc(doc(db, "chats", chatId, "typing", currentUser.uid), { isTyping: false });
+    }, 2000);
   };
 
   const handleUnmatch = async () => {
@@ -174,6 +211,11 @@ function ChatContent() {
           })
         )}
         <div ref={chatEndRef} />
+        {isTargetTyping && (
+          <div style={{ padding: "10px", color: "var(--text-muted)", fontStyle: "italic", fontSize: "0.875rem" }}>
+            {targetName} is typing...
+          </div>
+        )}
       </div>
 
       <form className={styles.inputArea} onSubmit={sendMessage}>
@@ -182,7 +224,7 @@ function ChatContent() {
           className={styles.input} 
           placeholder="Say something nice..." 
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={handleInputChange}
         />
         <button type="submit" className={styles.sendBtn} disabled={!inputText.trim()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>

@@ -21,6 +21,11 @@ type Profile = {
   images?: string[];
   verificationStatus?: string;
   distance?: string;
+  height?: string;
+  zodiac?: string;
+  drinking?: string;
+  smoking?: string;
+  matchScore?: number;
 };
 
 // Fallback mock profiles in case Firestore is empty or not configured yet
@@ -130,18 +135,41 @@ export default function Discover() {
           return;
         }
 
+        // Calculate Compatibility Score
+        let score = 50; // Base score
+        const targetTags = data.tags || [];
+        const myTags = currentUserData?.tags || [];
+        
+        // +10 for each overlapping tag
+        const overlappingTags = targetTags.filter((t: string) => myTags.includes(t));
+        score += (overlappingTags.length * 10);
+
+        // Age proximity (closer is better, max +20)
+        const ageDiff = Math.abs((currentUserData?.age || 25) - userAge);
+        if (ageDiff <= 2) score += 20;
+        else if (ageDiff <= 5) score += 10;
+        else if (ageDiff <= 10) score += 5;
+
+        // Cap at 99
+        if (score > 99) score = 99;
+
         fetchedProfiles.push({
           id: docSnap.id,
           name: data.name || "Unknown",
-          age: data.age || 25,
+          age: userAge,
           city: data.city || "",
           lookingFor: data.lookingFor || "",
           bio: data.bio || "No bio yet.",
-          tags: data.tags || [],
+          tags: targetTags,
           image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           images: data.images || [data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
           verificationStatus: data.verificationStatus || "none",
-          distance: "Nearby"
+          distance: "Nearby",
+          height: data.height || "",
+          zodiac: data.zodiac || "",
+          drinking: data.drinking || "",
+          smoking: data.smoking || "",
+          matchScore: score
         });
       });
       
@@ -402,6 +430,35 @@ export default function Discover() {
                   {currentProfile.tags.map(tag => (
                     <span key={tag} className={styles.tag}>{tag}</span>
                   ))}
+                </div>
+
+                {/* Advanced Badges */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "12px" }}>
+                  {currentProfile.matchScore && (
+                    <span style={{ background: "rgba(34, 197, 94, 0.2)", border: "1px solid #22c55e", color: "#22c55e", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 700 }}>
+                      {currentProfile.matchScore}% Match
+                    </span>
+                  )}
+                  {currentProfile.height && (
+                    <span style={{ background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                      📏 {currentProfile.height}
+                    </span>
+                  )}
+                  {currentProfile.zodiac && (
+                    <span style={{ background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                      ✨ {currentProfile.zodiac}
+                    </span>
+                  )}
+                  {currentProfile.drinking && (
+                    <span style={{ background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                      🍷 {currentProfile.drinking}
+                    </span>
+                  )}
+                  {currentProfile.smoking && (
+                    <span style={{ background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                      🚬 {currentProfile.smoking}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

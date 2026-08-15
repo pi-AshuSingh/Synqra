@@ -46,6 +46,12 @@ export default function Onboarding() {
   const [photoUrl2, setPhotoUrl2] = useState("");
   const [photoUrl3, setPhotoUrl3] = useState("");
 
+  // Advanced state
+  const [height, setHeight] = useState("");
+  const [zodiac, setZodiac] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter(t => t !== tag));
@@ -110,6 +116,10 @@ export default function Onboarding() {
           tags: selectedTags,
           image: finalImageUrl1, // Legacy fallback
           images: imagesArray,
+          height,
+          zodiac,
+          drinking,
+          smoking,
           minAgePref: 18,
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
@@ -256,6 +266,52 @@ export default function Onboarding() {
                     {tag}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: "2rem" }}>
+              <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", color: "var(--primary-color)" }}>Advanced (Optional)</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                <div className={styles.formGroup}>
+                  <label>Height</label>
+                  <input type="text" className={styles.input} placeholder="e.g. 5'9&quot;" value={height} onChange={e => setHeight(e.target.value)} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Zodiac</label>
+                  <select className={styles.input} value={zodiac} onChange={e => setZodiac(e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="Aries">Aries</option>
+                    <option value="Taurus">Taurus</option>
+                    <option value="Gemini">Gemini</option>
+                    <option value="Cancer">Cancer</option>
+                    <option value="Leo">Leo</option>
+                    <option value="Virgo">Virgo</option>
+                    <option value="Libra">Libra</option>
+                    <option value="Scorpio">Scorpio</option>
+                    <option value="Sagittarius">Sagittarius</option>
+                    <option value="Capricorn">Capricorn</option>
+                    <option value="Aquarius">Aquarius</option>
+                    <option value="Pisces">Pisces</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Drinking</label>
+                  <select className={styles.input} value={drinking} onChange={e => setDrinking(e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="Sometimes">Sometimes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Smoking</label>
+                  <select className={styles.input} value={smoking} onChange={e => setSmoking(e.target.value)}>
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="Sometimes">Sometimes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
