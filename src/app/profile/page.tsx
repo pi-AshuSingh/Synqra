@@ -20,6 +20,8 @@ export default function Profile() {
   const [bio, setBio] = useState("");
   const [city, setCity] = useState("");
   const [lookingFor, setLookingFor] = useState("");
+  const [minAge, setMinAge] = useState(18);
+  const [maxAge, setMaxAge] = useState(99);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -39,6 +41,8 @@ export default function Profile() {
           setBio(data.bio || "");
           setCity(data.city || "");
           setLookingFor(data.lookingFor || "");
+          setMinAge(data.minAgePref || 18);
+          setMaxAge(data.maxAgePref || 99);
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -57,7 +61,9 @@ export default function Profile() {
       await updateDoc(doc(db, "users", user.uid), {
         bio,
         city,
-        lookingFor
+        lookingFor,
+        minAgePref: minAge,
+        maxAgePref: maxAge
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -87,7 +93,17 @@ export default function Profile() {
           <Logo size={32} />
           <h2 className="text-gradient" style={{ margin: 0 }}>My Profile</h2>
         </div>
-        <Link href="/discover" className="btn-glass">Done</Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Sparks ✨
+          </Link>
+          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Discover
+          </Link>
+          <Link href="/matches" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Matches
+          </Link>
+        </div>
       </header>
 
       {profileData && (
@@ -130,6 +146,29 @@ export default function Profile() {
               value={bio}
               onChange={e => setBio(e.target.value)}
             ></textarea>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <div className={styles.formGroup} style={{ flex: 1 }}>
+              <label>Min Age Pref</label>
+              <input 
+                type="number" 
+                className={styles.input} 
+                value={minAge}
+                onChange={e => setMinAge(parseInt(e.target.value))}
+                min="18" max="99"
+              />
+            </div>
+            <div className={styles.formGroup} style={{ flex: 1 }}>
+              <label>Max Age Pref</label>
+              <input 
+                type="number" 
+                className={styles.input} 
+                value={maxAge}
+                onChange={e => setMaxAge(parseInt(e.target.value))}
+                min="18" max="99"
+              />
+            </div>
           </div>
 
           <div className={styles.formGroup}>

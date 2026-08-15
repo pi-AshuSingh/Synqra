@@ -104,6 +104,8 @@ export default function Onboarding() {
           bio,
           tags: selectedTags,
           image: finalImageUrl,
+          minAgePref: 18,
+          maxAgePref: 99,
           createdAt: new Date().toISOString(),
           premium: false,
           isAdmin: false

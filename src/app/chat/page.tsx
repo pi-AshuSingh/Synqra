@@ -86,16 +86,41 @@ function ChatContent() {
     }
   };
 
+  const handleUnmatch = async () => {
+    if (!currentUser || !targetId) return;
+    
+    if (confirm(`Are you sure you want to unmatch with ${targetName}?`)) {
+      try {
+        const { deleteDoc, doc } = await import("firebase/firestore");
+        // Delete interaction from our side
+        await deleteDoc(doc(db, "users", currentUser.uid, "interactions", targetId));
+        // Delete the receivedLike we sent them
+        await deleteDoc(doc(db, "users", targetId, "receivedLikes", currentUser.uid));
+        
+        router.push("/matches");
+      } catch (err) {
+        console.error("Error unmatching:", err);
+        alert("Failed to unmatch.");
+      }
+    }
+  };
+
   return (
     <main className={styles.container}>
       <header className={styles.header}>
         <button className={styles.backBtn} onClick={() => router.back()}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
-        <div className={styles.profileInfo}>
+        <div className={styles.profileInfo} style={{ flex: 1 }}>
           {targetImg && <img src={targetImg} alt={targetName} className={styles.avatar} />}
           <div className={styles.name}>{targetName}</div>
         </div>
+        <button 
+          onClick={handleUnmatch}
+          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer', padding: '8px' }}
+        >
+          Unmatch
+        </button>
       </header>
 
       <div className={styles.chatArea}>

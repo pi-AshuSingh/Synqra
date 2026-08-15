@@ -69,18 +69,19 @@ export default function Discover() {
 
   const fetchProfiles = async (uid: string) => {
     try {
-      // 0. Fetch current user profile to get interestedIn
-      const currentUserDoc = await getDocs(query(collection(db, "users"))); // Actually, just getDoc
+      // 0. Fetch current user profile to get preferences
       const userRef = doc(db, "users", uid);
       const { getDoc } = await import("firebase/firestore");
       const userSnap = await getDoc(userRef);
       const currentUserData = userSnap.data();
       const interestedIn = currentUserData?.interestedIn || "everyone";
+      const minAgePref = currentUserData?.minAgePref || 18;
+      const maxAgePref = currentUserData?.maxAgePref || 99;
 
       // 1. Fetch all previous interactions to filter them out
       const interactionsSnapshot = await getDocs(collection(db, "users", uid, "interactions"));
       const interactedIds = new Set<string>();
-      interactionsSnapshot.forEach(doc => interactedIds.add(doc.id));
+      interactionsSnapshot.forEach(docSnap => interactedIds.add(docSnap.id));
 
       // 2. Fetch all users
       const usersSnapshot = await getDocs(collection(db, "users"));
@@ -96,6 +97,12 @@ export default function Discover() {
 
         // Apply gender filtering
         if (interestedIn !== "everyone" && data.gender !== interestedIn) {
+          return;
+        }
+        
+        // Apply age filtering
+        const userAge = data.age || 25;
+        if (userAge < minAgePref || userAge > maxAgePref) {
           return;
         }
 
@@ -143,6 +150,14 @@ export default function Discover() {
         targetImage: targetProfile.image,
         timestamp: new Date().toISOString()
       });
+
+      // If it's a 'like', also double-write to the target user's receivedLikes
+      if (type === "like") {
+        await setDoc(doc(db, "users", targetProfile.id, "receivedLikes", currentUser.uid), {
+          sourceId: currentUser.uid,
+          timestamp: new Date().toISOString()
+        });
+      }
     } catch (err) {
       console.error("Failed to save interaction", err);
     }
@@ -178,6 +193,9 @@ export default function Discover() {
       <header className={styles.header}>
         <Logo size={28} />
         <div style={{ display: "flex", gap: "10px" }}>
+          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Sparks ✨
+          </Link>
           <Link href="/matches" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Matches
           </Link>

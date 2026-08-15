@@ -77,9 +77,19 @@ export default function Matches() {
       <header className={styles.header}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <Logo size={32} />
-          <h2 className="text-gradient" style={{ margin: 0 }}>Your Sparks</h2>
+          <h2 className="text-gradient" style={{ margin: 0 }}>Matches</h2>
         </div>
-        <Link href="/discover" className="btn-glass">Keep Swiping</Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Sparks ✨
+          </Link>
+          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Discover
+          </Link>
+          <Link href="/profile" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Profile
+          </Link>
+        </div>
       </header>
 
       {matches.length === 0 ? (
