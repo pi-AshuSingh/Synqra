@@ -1,0 +1,101 @@
+.adminContainer {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.statCard {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  text-align: center;
+}
+
+.statValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.usersTableContainer {
+  background: rgba(20, 20, 25, 0.5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  overflow-x: auto;
+}
+
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usersTable th,
+.usersTable td {
+  padding: var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.usersTable th {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.usersTable tr:last-child td {
+  border-bottom: none;
+}
+
+.deleteBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  margin-right: 4px;
+}
+
+.badgeAdmin {
+  background: var(--gradient-brand);
+}
