@@ -142,7 +142,7 @@
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  color: white;
+  color: var(--text-color);
   transition: all var(--transition-fast);
 }
 
@@ -152,8 +152,8 @@
 
 .passBtn:hover {
   color: white;
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .sparkBtn {

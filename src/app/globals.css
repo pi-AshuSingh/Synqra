@@ -2,9 +2,9 @@
 
 :root {
   /* Color Palette */
-  --bg-color: #0b0914; /* Deep dark purple/black */
-  --text-color: #ffffff;
-  --text-muted: #a09eb5;
+  --bg-color: #f8f9fa; /* Light gray background */
+  --text-color: #111111; /* Dark text */
+  --text-muted: #6b7280; /* Gray text */
   
   --primary-color: #f72585; /* Neon pink */
   --secondary-color: #7209b7; /* Deep purple */
@@ -16,8 +16,8 @@
   --gradient-aura: linear-gradient(135deg, var(--tertiary-color), var(--primary-color), var(--accent-color));
   
   /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.08);
   --glass-blur: blur(12px);
 
   /* Typography */
@@ -123,8 +123,9 @@ p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); }
 .btn-glass {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  color: white;
+  color: var(--text-color);
   padding: 12px 24px;
   border-radius: var(--radius-full);
   font-size: 1rem;
@@ -133,8 +134,8 @@ p { font-size: 1rem; line-height: 1.6; color: var(--text-muted); }
 }
 
 .btn-glass:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Layout */

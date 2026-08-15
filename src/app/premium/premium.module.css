@@ -3,7 +3,7 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: var(--bg-color);
-  color: white;
+  color: var(--text-color);
 }
 
 .header {

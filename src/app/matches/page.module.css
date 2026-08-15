@@ -24,7 +24,7 @@
 .matchCard {
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   transition: transform 0.2s ease;
   cursor: pointer;
@@ -34,7 +34,7 @@
 
 .matchCard:hover {
   transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .imageWrapper {
