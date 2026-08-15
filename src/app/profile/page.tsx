@@ -34,6 +34,8 @@ export default function Profile() {
   const [prompt, setPrompt] = useState("");
   const [promptAnswer, setPromptAnswer] = useState("");
   const [completionScore, setCompletionScore] = useState(0);
+  
+  const [isIncognito, setIsIncognito] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -67,6 +69,8 @@ export default function Profile() {
 
           setPrompt(data.prompt || "");
           setPromptAnswer(data.promptAnswer || "");
+          
+          setIsIncognito(data.isIncognito || false);
 
           // Calculate Completion
           let score = 0;
@@ -108,7 +112,8 @@ export default function Profile() {
         drinking,
         smoking,
         prompt,
-        promptAnswer
+        promptAnswer,
+        isIncognito
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -150,6 +155,25 @@ export default function Profile() {
       alert("⚡ Profile Boosted! You will be shown first to everyone for the next 30 minutes.");
     } catch (err: any) {
       alert("Failed to boost: " + err.message);
+    }
+  };
+
+  const handleIncognitoToggle = async () => {
+    if (!user) return;
+    if (!profileData?.isPremium) {
+      router.push("/premium");
+      return;
+    }
+    const newValue = !isIncognito;
+    setIsIncognito(newValue);
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        isIncognito: newValue
+      });
+      alert(`Incognito mode is now ${newValue ? 'ON' : 'OFF'}.`);
+    } catch (err: any) {
+      alert("Failed to update incognito status.");
+      setIsIncognito(!newValue); // revert
     }
   };
 
@@ -229,6 +253,13 @@ export default function Profile() {
                 ⚡ Boost
               </button>
             </div>
+            
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "16px" }}>
+              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", cursor: "pointer" }} onClick={handleIncognitoToggle}>
+                🕵️‍♂️ Incognito Mode {isIncognito ? "ON" : "OFF"}
+              </label>
+            </div>
+
             {profileData.verificationStatus === "pending" && (
               <div style={{ marginTop: "10px", fontSize: "0.8rem", color: "#eab308", textAlign: "center" }}>Verification Pending</div>
             )}
@@ -264,10 +295,11 @@ export default function Profile() {
               value={lookingFor}
               onChange={e => setLookingFor(e.target.value)}
             >
+              <option value="">Select Intention</option>
+              <option value="Marriage">Marriage</option>
               <option value="Serious Relationship">Serious Relationship</option>
-              <option value="Something Casual">Something Casual</option>
-              <option value="New Friends">New Friends</option>
-              <option value="Not Sure Yet">Not Sure Yet</option>
+              <option value="Casual">Casual</option>
+              <option value="Just Friends">Just Friends</option>
             </select>
           </div>
 

@@ -22,6 +22,7 @@ export default function Matches() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -101,6 +102,16 @@ export default function Matches() {
         </div>
       </header>
 
+      <div style={{ padding: "0 20px 20px 20px" }}>
+        <input 
+          type="text" 
+          placeholder="Search matches by name..." 
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--glass-bg)", color: "white" }}
+        />
+      </div>
+
       {matches.length === 0 ? (
         <div className={`glass-card ${styles.emptyState}`}>
           <div style={{ fontSize: "3rem" }}>✨</div>
@@ -110,7 +121,7 @@ export default function Matches() {
         </div>
       ) : (
         <div className={styles.grid}>
-          {matches.map(match => (
+          {matches.filter(m => m.targetName.toLowerCase().includes(searchQuery.toLowerCase())).map(match => (
             <div key={match.id} className={styles.matchCard} onClick={() => router.push(`/chat?id=${match.targetId}&name=${encodeURIComponent(match.targetName)}&img=${encodeURIComponent(match.targetImage)}`)}>
               <div className={styles.imageWrapper}>
                 <img src={match.targetImage} alt={match.targetName} className={styles.image} />

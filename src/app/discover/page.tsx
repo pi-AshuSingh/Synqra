@@ -122,6 +122,11 @@ export default function Discover() {
       const interactedIds = new Set<string>();
       interactionsSnapshot.forEach(docSnap => interactedIds.add(docSnap.id));
 
+      // 1.5 Fetch all users who liked the current user (for Incognito bypass)
+      const receivedLikesSnapshot = await getDocs(collection(db, "users", uid, "receivedLikes"));
+      const usersWhoLikedMe = new Set<string>();
+      receivedLikesSnapshot.forEach(docSnap => usersWhoLikedMe.add(docSnap.id));
+
       // 2. Fetch all users
       const usersSnapshot = await getDocs(collection(db, "users"));
       const fetchedProfiles: Profile[] = [];
@@ -143,6 +148,13 @@ export default function Discover() {
         const userAge = data.age || 25;
         if (userAge < minAgePref || userAge > maxAgePref) {
           return;
+        }
+
+        // Apply Incognito filtering
+        if (data.isIncognito) {
+          if (!usersWhoLikedMe.has(docSnap.id)) {
+            return; // Hide this user if they are incognito and haven't liked me
+          }
         }
 
         // Calculate Compatibility Score
@@ -536,8 +548,16 @@ export default function Discover() {
                 {currentProfile.city && <div className={styles.distance} style={{ marginBottom: "8px" }}>{currentProfile.city}</div>}
                 
                 {currentProfile.lookingFor && (
-                  <div style={{ fontSize: "0.875rem", color: "var(--primary-color)", fontWeight: 600, marginBottom: "8px" }}>
-                    Looking for: {currentProfile.lookingFor}
+                  <div style={{ marginBottom: "8px" }}>
+                    <span style={{ 
+                      background: currentProfile.lookingFor === "Marriage" ? "linear-gradient(45deg, #fbbf24, #d97706)" : 
+                                  currentProfile.lookingFor === "Serious Relationship" ? "linear-gradient(45deg, #f43f5e, #be123c)" :
+                                  currentProfile.lookingFor === "Casual" ? "linear-gradient(45deg, #a855f7, #7e22ce)" :
+                                  "linear-gradient(45deg, #3b82f6, #1d4ed8)",
+                      color: "white", padding: "4px 10px", borderRadius: "12px", fontSize: "0.75rem", fontWeight: "bold" 
+                    }}>
+                      🎯 {currentProfile.lookingFor}
+                    </span>
                   </div>
                 )}
                 
