@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/public/icon.svg" alt="Synqra Logo" width="120" height="120" />
+  <h1>Synqra 2.0</h1>
+  <p><strong>A Modern, Fast, and Free Dating App for the Indian Market</strong></p>
+  
+  [![Website](https://img.shields.io/website?url=https%3A%2F%2Fsynqra-4you.web.app&logo=firebase)](https://synqra-4you.web.app)
+  [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
+  [![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-orange?logo=firebase)](https://firebase.google.com/)
+</div>
 
-## Getting Started
+---
 
-First, run the development server:
+## 🌟 Live Demo
+
+**[Check out the live app here: synqra-4you.web.app](https://synqra-4you.web.app)**
+
+*Note: Since the app is in its MVP stage, go ahead and create a brand new account using the 'Start Discovering' flow to test the full feature set!*
+
+---
+
+## 🚀 Features
+
+Synqra has been built from the ground up to be an aesthetic, high-performance web app utilizing glassmorphism and smooth animations.
+
+### 💖 The Swiping Engine
+- **Discover Profiles:** Browse profiles one by one in a stack-like UI.
+- **Like or Pass:** Swipe right (Spark) or swipe left (Pass).
+- **Smart Filtering:** The app automatically hides people you have already interacted with so you never see duplicates.
+
+### 👤 Enhanced Profiles & Onboarding
+- **Detailed Bios:** Set your Age, City, and 'Looking For' intent (Serious, Casual, Friends).
+- **Aura Tags:** Pick up to 3 personality traits (e.g. Adventurous, Chill, Creative).
+- **Free Image Links:** Just paste an image URL from Instagram or Unsplash for your profile photo (No paid cloud storage required!).
+
+### ✨ Matches Dashboard
+- A dedicated page at `/matches` to view a beautiful grid of all the profiles you have 'Sparked' with.
+
+### ⚙️ My Profile Editor
+- Edit your Bio, City, and Intent at any time.
+- See exactly how your profile looks to others.
+- Securely log out.
+
+### 🛡️ Admin Dashboard
+- Protected `/admin` route explicitly accessible only to accounts with an `isAdmin: true` flag in Firestore. 
+
+---
+
+## 🛠️ Tech Stack
+
+Synqra operates on a **100% Free Tier** architecture. 
+
+- **Frontend Framework:** [Next.js 14](https://nextjs.org/) (App Router, Static Export Mode)
+- **Styling:** Vanilla CSS Modules with custom CSS variables, gradients, and animated glassmorphism blobs.
+- **Backend & Auth:** [Firebase Authentication](https://firebase.google.com/docs/auth) (Email/Password)
+- **Database:** [Cloud Firestore](https://firebase.google.com/docs/firestore) 
+- **Hosting:** Firebase Hosting
+
+### 🔒 Security
+
+All reads and writes are protected by highly restrictive Firestore Security Rules (`firestore.rules`). 
+- Users can only edit their own documents.
+- Sensitive collections (like interactions) are securely locked down.
+- Admin-only areas strictly verify the user's role on the backend.
+
+---
+
+## 💻 Local Development
+
+First, install dependencies:
+
+```bash
+npm install
+```
+
+Set up your Firebase configuration in `src/lib/firebase.ts`.
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Synqra is configured as a static HTML export (`output: "export"` in `next.config.ts`), allowing it to be hosted on Firebase Hosting without requiring any server-side rendering or Cloud Functions.
 
-## Learn More
+To deploy:
+```bash
+npm run build
+firebase deploy --only hosting,firestore
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Built with ❤️ for Ashutosh*
