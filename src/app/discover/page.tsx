@@ -21,21 +21,21 @@ type Profile = {
 const MOCK_PROFILES: Profile[] = [
   {
     id: "mock1",
-    name: "Elena",
+    name: "Aisha",
     age: 26,
-    bio: "UX Designer by day, amateur DJ by night. Let's trade Spotify playlists.",
+    bio: "UX Designer in Bangalore. Love masala chai, indie music, and weekend road trips.",
     tags: ["Creative", "Spontaneous", "Chill"],
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    distance: "5 miles away"
+    distance: "5 km away"
   },
   {
     id: "mock2",
-    name: "Marcus",
+    name: "Rohan",
     age: 29,
-    bio: "Coffee addict and weekend hiker. Looking for someone to get lost in the mountains with.",
+    bio: "Techie by day, amateur photographer by night. Looking for someone to explore Delhi cafes with.",
     tags: ["Adventurous", "Analytical", "Outgoing"],
     image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    distance: "12 miles away"
+    distance: "12 km away"
   }
 ];
 

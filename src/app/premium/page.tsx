@@ -53,7 +53,7 @@ export default function Premium() {
         </div>
         
         <div className={styles.pricing}>
-          <div className={styles.priceAmount}>$14.99<span className={styles.pricePeriod}>/mo</span></div>
+          <div className={styles.priceAmount}>₹999<span className={styles.pricePeriod}>/mo</span></div>
           <p className={styles.billingText}>Billed monthly. Cancel anytime.</p>
         </div>
         
