@@ -34,6 +34,7 @@ export default function Onboarding() {
   // Profile state
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
+  const [interestedIn, setInterestedIn] = useState("");
   const [age, setAge] = useState("");
   const [city, setCity] = useState("");
   const [lookingFor, setLookingFor] = useState("");
@@ -57,7 +58,7 @@ export default function Onboarding() {
     setError("");
     
     if (step === 1) {
-      if (!name || !gender || !age || !city || !lookingFor) {
+      if (!name || !gender || !interestedIn || !age || !city || !lookingFor) {
         return setError("Please fill out all fields.");
       }
       if (parseInt(age) < 18) {
@@ -67,7 +68,7 @@ export default function Onboarding() {
     } 
     else if (step === 2) {
       if (!photoUrl) {
-        return setError("Please upload a profile photo.");
+        return setError("Please add a profile photo URL.");
       }
       if (!bio) {
         return setError("Please write a short bio.");
@@ -96,6 +97,7 @@ export default function Onboarding() {
           name,
           email,
           gender,
+          interestedIn,
           age: parseInt(age),
           city,
           lookingFor,
@@ -153,6 +155,16 @@ export default function Onboarding() {
                   <option value="nonbinary">Non-binary</option>
                 </select>
               </div>
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+              <label>Interested In</label>
+              <select className={styles.input} value={interestedIn} onChange={e => setInterestedIn(e.target.value)}>
+                <option value="">Select</option>
+                <option value="man">Men</option>
+                <option value="woman">Women</option>
+                <option value="everyone">Everyone</option>
+              </select>
             </div>
 
             <div className={styles.formGroup}>

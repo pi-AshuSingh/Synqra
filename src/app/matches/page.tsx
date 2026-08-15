@@ -92,7 +92,7 @@ export default function Matches() {
       ) : (
         <div className={styles.grid}>
           {matches.map(match => (
-            <div key={match.id} className={styles.matchCard} onClick={() => alert(`Chat feature coming soon for ${match.targetName}!`)}>
+            <div key={match.id} className={styles.matchCard} onClick={() => router.push(`/chat?id=${match.targetId}&name=${encodeURIComponent(match.targetName)}&img=${encodeURIComponent(match.targetImage)}`)}>
               <div className={styles.imageWrapper}>
                 <img src={match.targetImage} alt={match.targetName} className={styles.image} />
               </div>

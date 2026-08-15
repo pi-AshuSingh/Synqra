@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, query } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
@@ -69,6 +69,14 @@ export default function Discover() {
 
   const fetchProfiles = async (uid: string) => {
     try {
+      // 0. Fetch current user profile to get interestedIn
+      const currentUserDoc = await getDocs(query(collection(db, "users"))); // Actually, just getDoc
+      const userRef = doc(db, "users", uid);
+      const { getDoc } = await import("firebase/firestore");
+      const userSnap = await getDoc(userRef);
+      const currentUserData = userSnap.data();
+      const interestedIn = currentUserData?.interestedIn || "everyone";
+
       // 1. Fetch all previous interactions to filter them out
       const interactionsSnapshot = await getDocs(collection(db, "users", uid, "interactions"));
       const interactedIds = new Set<string>();
@@ -78,22 +86,30 @@ export default function Discover() {
       const usersSnapshot = await getDocs(collection(db, "users"));
       const fetchedProfiles: Profile[] = [];
       
-      usersSnapshot.forEach((doc) => {
-        const data = doc.data();
-        // Skip current user and already interacted users
-        if (doc.id !== uid && !interactedIds.has(doc.id) && data.isAdmin !== true) {
-          fetchedProfiles.push({
-            id: doc.id,
-            name: data.name || "Unknown",
-            age: data.age || 25,
-            city: data.city || "",
-            lookingFor: data.lookingFor || "",
-            bio: data.bio || "No bio yet.",
-            tags: data.tags || [],
-            image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            distance: "Nearby"
-          });
+      usersSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        
+        // Skip current user and already interacted users and admins
+        if (docSnap.id === uid || interactedIds.has(docSnap.id) || data.isAdmin === true) {
+          return;
         }
+
+        // Apply gender filtering
+        if (interestedIn !== "everyone" && data.gender !== interestedIn) {
+          return;
+        }
+
+        fetchedProfiles.push({
+          id: docSnap.id,
+          name: data.name || "Unknown",
+          age: data.age || 25,
+          city: data.city || "",
+          lookingFor: data.lookingFor || "",
+          bio: data.bio || "No bio yet.",
+          tags: data.tags || [],
+          image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          distance: "Nearby"
+        });
       });
       
       // Shuffle profiles for randomness
