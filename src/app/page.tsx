@@ -137,7 +137,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.founderSection}>
+      <section id="about" className={styles.founderSection}>
         <div className={styles.founderContent}>
           <div className={styles.quoteMark}>“</div>
           <h2 className={styles.founderQuote}>At Synqra, it is our mission to use technology to bring back deep and meaningful relationships.</h2>
@@ -172,7 +172,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.faqSection}>
+      <section id="help" className={styles.faqSection}>
         <h2 className={styles.sectionTitle} style={{ textAlign: "left", marginBottom: "30px" }}>Frequently Asked Questions</h2>
         
         {[
