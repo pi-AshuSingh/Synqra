@@ -654,6 +654,19 @@ export default function Discover() {
                   </div>
                 )}
 
+                {/* Audio Prompt Player */}
+                <div style={{ marginTop: "12px", background: "rgba(255,255,255,0.1)", padding: "8px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "10px", width: "fit-content" }}>
+                  <button style={{ width: "24px", height: "24px", borderRadius: "50%", background: "var(--primary-color)", border: "none", color: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "2px", height: "16px" }}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                      <div key={i} style={{ width: "3px", height: `${Math.max(4, Math.random() * 16)}px`, background: "white", borderRadius: "2px", opacity: 0.7 }} />
+                    ))}
+                  </div>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginLeft: "4px" }}>0:05</span>
+                </div>
+
                 {/* Advanced Badges */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "12px" }}>
                   {currentProfile.matchScore && (

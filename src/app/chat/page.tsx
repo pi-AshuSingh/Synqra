@@ -30,6 +30,7 @@ function ChatContent() {
   const [targetVerified, setTargetVerified] = useState(false);
   const [targetOnline, setTargetOnline] = useState(false);
   const [isTargetTyping, setIsTargetTyping] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   let typingTimeout: NodeJS.Timeout | null = null;
 
@@ -150,6 +151,24 @@ function ChatContent() {
     }, 2000);
   };
 
+  const generateIcebreaker = () => {
+    setIsGenerating(true);
+    
+    // Simulate AI generation delay
+    setTimeout(() => {
+      const prompts = [
+        `Hey ${targetName}, if you could instantly teleport anywhere right now, where would we go?`,
+        `Quick question for you ${targetName}: what's the most controversial food opinion you have?`,
+        `Okay ${targetName}, two truths and a lie. Go!`,
+        `I have a theory that everyone has a secret useless talent. What's yours, ${targetName}?`,
+        `Hey ${targetName}! What's the best thing that happened to you this week?`
+      ];
+      const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+      setInputText(randomPrompt);
+      setIsGenerating(false);
+    }, 600);
+  };
+
   const handleUnmatch = async () => {
     if (!currentUser || !targetId) return;
     
@@ -233,6 +252,15 @@ function ChatContent() {
       </div>
 
       <form className={styles.inputArea} onSubmit={sendMessage}>
+        <button 
+          type="button" 
+          className={styles.icebreakerBtn}
+          onClick={generateIcebreaker}
+          disabled={isGenerating}
+          title="AI Icebreaker"
+        >
+          {isGenerating ? "..." : "🪄"}
+        </button>
         <input 
           type="text" 
           className={styles.input} 
