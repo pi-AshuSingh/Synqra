@@ -38,47 +38,48 @@ export default function Home() {
           
           <form className={styles.searchWidget} onSubmit={handleSearch}>
             <div className={styles.searchGroup}>
-              <label className={styles.searchLabel}>I'm looking for a</label>
+              <label className={styles.searchLabel}>I want to meet</label>
               <select className={styles.searchInput}>
-                <option>Woman</option>
-                <option>Man</option>
+                <option>Women</option>
+                <option>Men</option>
+                <option>Everyone</option>
               </select>
             </div>
             
             <div className={styles.searchGroup}>
-              <label className={styles.searchLabel}>aged</label>
+              <label className={styles.searchLabel}>Age range</label>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <select className={styles.searchInput} style={{ minWidth: "70px" }}>
+                  <option>18</option>
                   <option>22</option>
-                  <option>23</option>
-                  <option>24</option>
+                  <option>25</option>
                 </select>
                 <span style={{ color: "white", fontSize: "0.85rem" }}>to</span>
                 <select className={styles.searchInput} style={{ minWidth: "70px" }}>
                   <option>27</option>
-                  <option>28</option>
-                  <option>29</option>
+                  <option>35</option>
+                  <option>50+</option>
                 </select>
               </div>
             </div>
             
             <div className={styles.searchGroup}>
-              <label className={styles.searchLabel}>of religion</label>
+              <label className={styles.searchLabel}>Distance</label>
               <select className={styles.searchInput}>
-                <option>Select</option>
-                <option>Hindu</option>
-                <option>Muslim</option>
-                <option>Christian</option>
+                <option>Up to 10 miles</option>
+                <option>Up to 25 miles</option>
+                <option>Up to 50 miles</option>
+                <option>Anywhere</option>
               </select>
             </div>
             
             <div className={styles.searchGroup}>
-              <label className={styles.searchLabel}>and mother tongue</label>
+              <label className={styles.searchLabel}>Looking for</label>
               <select className={styles.searchInput}>
-                <option>Select</option>
-                <option>Hindi</option>
-                <option>English</option>
-                <option>Marathi</option>
+                <option>Serious Relationship</option>
+                <option>Casual Dating</option>
+                <option>Just Friends</option>
+                <option>Not sure yet</option>
               </select>
             </div>
 
@@ -127,8 +128,8 @@ export default function Home() {
         <div className={styles.vipLeft}>
           <div className={styles.vipLogo}>▽</div>
           <div className={styles.vipText}>
-            <h3>VIP SYNQRA</h3>
-            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>NO.1 MATCHMAKING SERVICE FOR ELITES</p>
+            <h3>SYNQRA PREMIUM</h3>
+            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>MAXIMIZE YOUR DATING EXPERIENCE</p>
           </div>
         </div>
         <div style={{ flex: 1, padding: "0 20px" }}>
@@ -199,7 +200,7 @@ export default function Home() {
       </section>
 
       <footer className={styles.footer}>
-        <p>© 2026 Synqra Matchmaking Service. All rights reserved.</p>
+        <p>© 2026 Synqra Dating App. All rights reserved.</p>
       </footer>
     </main>
   );
