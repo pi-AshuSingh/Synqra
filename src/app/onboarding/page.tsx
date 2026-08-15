@@ -41,9 +41,7 @@ export default function Onboarding() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   
   // Photo state
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoUrl, setPhotoUrl] = useState("");
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -53,18 +51,7 @@ export default function Onboarding() {
     }
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image must be smaller than 5MB");
-        return;
-      }
-      setPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
-      setError("");
-    }
-  };
+  // Removed handlePhotoChange
 
   const handleNext = async () => {
     setError("");
@@ -79,7 +66,7 @@ export default function Onboarding() {
       setStep(2);
     } 
     else if (step === 2) {
-      if (!photo) {
+      if (!photoUrl) {
         return setError("Please upload a profile photo.");
       }
       if (!bio) {
@@ -100,13 +87,9 @@ export default function Onboarding() {
         
         await updateProfile(user, { displayName: name });
         
-        // 2. Upload photo to Firebase Storage
-        let photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"; // Fallback
-        if (photo) {
-          const storageRef = ref(storage, `profiles/${user.uid}/avatar_${Date.now()}`);
-          const snapshot = await uploadBytes(storageRef, photo);
-          photoUrl = await getDownloadURL(snapshot.ref);
-        }
+        // 2. We skip Firebase Storage since it requires a credit card.
+        // We use the image URL they pasted, or a fallback.
+        let finalImageUrl = photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
         
         // 3. Save to Firestore
         await setDoc(doc(db, "users", user.uid), {
@@ -118,7 +101,7 @@ export default function Onboarding() {
           lookingFor,
           bio,
           tags: selectedTags,
-          image: photoUrl,
+          image: finalImageUrl,
           createdAt: new Date().toISOString(),
           premium: false,
           isAdmin: false
@@ -192,37 +175,25 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="animate-fade-in">
             <h2 className="text-gradient">Your Vibe</h2>
-            <p className={styles.subtitle}>Upload your best photo and write a bio.</p>
+            <p className={styles.subtitle}>Add a profile photo and write a bio.</p>
             
-            <div className={styles.formGroup} style={{ alignItems: "center" }}>
-              <label>Profile Photo</label>
+            <div className={styles.formGroup}>
+              <label>Profile Image URL</label>
               <input 
-                type="file" 
-                accept="image/*" 
-                ref={fileInputRef} 
-                style={{ display: "none" }} 
-                onChange={handlePhotoChange} 
+                type="text" 
+                className={styles.input} 
+                placeholder="Paste an image link here (e.g. from Instagram)" 
+                value={photoUrl} 
+                onChange={e => setPhotoUrl(e.target.value)} 
               />
-              <div 
-                style={{ 
-                  width: "120px", height: "120px", borderRadius: "50%", 
-                  border: "2px dashed var(--glass-border)", display: "flex", 
-                  alignItems: "center", justifyContent: "center", 
-                  overflow: "hidden", cursor: "pointer", marginBottom: "1rem",
-                  background: "rgba(255,255,255,0.05)"
-                }}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {photoPreview ? (
-                  <img src={photoPreview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <span style={{ fontSize: "2rem", color: "var(--text-muted)" }}>+</span>
-                )}
-              </div>
-              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "-0.5rem" }}>Tap to upload (Max 5MB)</p>
+              {photoUrl && (
+                <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                  <img src={photoUrl} alt="Preview" style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--primary-color)" }} />
+                </div>
+              )}
             </div>
 
-            <div className={styles.formGroup}>
+            <div className={styles.formGroup} style={{ marginTop: "1.5rem" }}>
               <label>Bio</label>
               <textarea 
                 className={styles.input} 
