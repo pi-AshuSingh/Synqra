@@ -27,6 +27,7 @@ function ChatContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [targetVerified, setTargetVerified] = useState(false);
+  const [targetOnline, setTargetOnline] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,8 +71,12 @@ function ChatContent() {
     const fetchTarget = async () => {
       const { doc, getDoc } = await import("firebase/firestore");
       const snap = await getDoc(doc(db, "users", targetId));
-      if (snap.exists() && snap.data().verificationStatus === "verified") {
-        setTargetVerified(true);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.verificationStatus === "verified") setTargetVerified(true);
+        if (data.lastActive && (new Date().getTime() - new Date(data.lastActive).getTime() < 15 * 60 * 1000)) {
+          setTargetOnline(true);
+        }
       }
     };
     fetchTarget();
@@ -125,7 +130,12 @@ function ChatContent() {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
         <div className={styles.profileInfo} style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-          {targetImg && <img src={targetImg} alt={targetName} className={styles.avatar} />}
+          <div style={{ position: "relative" }}>
+            {targetImg && <img src={targetImg} alt={targetName} className={styles.avatar} />}
+            {targetOnline && (
+              <div style={{ position: "absolute", bottom: "0", right: "0", background: "#22c55e", width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--glass-bg)" }}></div>
+            )}
+          </div>
           <div className={styles.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             {targetName}
             {targetVerified && (

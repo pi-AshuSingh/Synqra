@@ -60,6 +60,8 @@ export default function Discover() {
   const [loading, setLoading] = useState(true);
   const [searchCity, setSearchCity] = useState("");
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+  const [isPremium, setIsPremium] = useState(false);
+  const [superLikesUsed, setSuperLikesUsed] = useState(0);
 
   // Reset indices when search city changes
   useEffect(() => {
@@ -96,6 +98,9 @@ export default function Discover() {
       const maxAgePref = currentUserData?.maxAgePref || 99;
       const userBlockedList = currentUserData?.blockedUsers || [];
       setBlockedIds(new Set(userBlockedList));
+      if (currentUserData?.isPremium) {
+        setIsPremium(true);
+      }
 
       // 1. Fetch all previous interactions to filter them out
       const interactionsSnapshot = await getDocs(collection(db, "users", uid, "interactions"));
@@ -159,6 +164,17 @@ export default function Discover() {
 
   const handleAction = async (type: "pass" | "like" | "super_like") => {
     if (currentIndex >= profiles.length || !currentUser) return;
+    
+    if (type === "super_like" && !isPremium && superLikesUsed >= 1) {
+      if (confirm("You have used your free Super Like for today! Upgrade to Premium for unlimited Super Likes.")) {
+        router.push("/premium");
+      }
+      return;
+    }
+
+    if (type === "super_like") {
+      setSuperLikesUsed(prev => prev + 1);
+    }
     
     const targetProfile = profiles[currentIndex];
     

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import ClientPresence from "@/components/ClientPresence";
 
 const outfit = Outfit({
   variable: "--font-family",
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} antialiased`}>
+        <ClientPresence />
         {children}
       </body>
     </html>

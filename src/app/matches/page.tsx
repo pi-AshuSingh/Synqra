@@ -15,6 +15,7 @@ type Match = {
   targetName: string;
   targetImage: string;
   timestamp: string;
+  isOnline?: boolean;
 };
 
 export default function Matches() {
@@ -39,17 +40,25 @@ export default function Matches() {
         
         const snapshot = await getDocs(q);
         const fetchedMatches: Match[] = [];
+        const { getDoc, doc: fsDoc } = await import("firebase/firestore");
         
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          
+          // Fetch target profile for online status
+          const targetSnap = await getDoc(fsDoc(db, "users", data.targetId));
+          const targetData = targetSnap.exists() ? targetSnap.data() : {};
+          const isOnline = targetData.lastActive && (new Date().getTime() - new Date(targetData.lastActive).getTime() < 15 * 60 * 1000);
+
           fetchedMatches.push({
-            id: doc.id,
+            id: docSnap.id,
             targetId: data.targetId,
             targetName: data.targetName,
             targetImage: data.targetImage || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            timestamp: data.timestamp
+            timestamp: data.timestamp,
+            isOnline: isOnline
           });
-        });
+        }
         
         // Sort client side
         fetchedMatches.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -107,7 +116,12 @@ export default function Matches() {
                 <img src={match.targetImage} alt={match.targetName} className={styles.image} />
               </div>
               <div className={styles.info}>
-                <div className={styles.name}>{match.targetName}</div>
+                <div className={styles.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  {match.targetName}
+                  {match.isOnline && (
+                    <span style={{ width: "8px", height: "8px", background: "#22c55e", borderRadius: "50%", display: "inline-block", boxShadow: "0 0 5px #22c55e" }}></span>
+                  )}
+                </div>
                 <div className={styles.time}>{new Date(match.timestamp).toLocaleDateString()}</div>
               </div>
             </div>
