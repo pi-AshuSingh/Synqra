@@ -145,7 +145,7 @@ export default function Home() {
           <p className={styles.founderName}>- Founder & CEO</p>
         </div>
         <div className={styles.founderImgWrapper}>
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Founder" className={styles.founderImg} />
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Founder" className={styles.founderImg} />
         </div>
       </section>
 
