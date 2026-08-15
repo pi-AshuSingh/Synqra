@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/public/icon.svg" alt="Synqra Logo" width="120" height="120" />
+  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/src/app/icon.svg" alt="Synqra Logo" width="120" height="120" />
   <h1>Synqra</h1>
   <p><strong>A Modern, Fast, and Free Dating App for the Indian Market</strong></p>
   
@@ -94,5 +94,5 @@ firebase deploy --only hosting,firestore
 
 ---
 <div align="center">
-  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/public/icon.svg" alt="Synqra Logo" width="40" height="40" />
+  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/src/app/icon.svg" alt="Synqra Logo" width="40" height="40" />
 </div>
