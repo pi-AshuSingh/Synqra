@@ -93,4 +93,6 @@ firebase deploy --only hosting,firestore
 ```
 
 ---
-*Built with ❤️ for Ashutosh*
+<div align="center">
+  <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/public/icon.svg" alt="Synqra Logo" width="40" height="40" />
+</div>
