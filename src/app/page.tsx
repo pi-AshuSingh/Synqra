@@ -142,7 +142,7 @@ export default function Home() {
         <div className={styles.founderContent}>
           <div className={styles.quoteMark}>“</div>
           <h2 className={styles.founderQuote}>At Synqra, it is our mission to use technology to bring back deep and meaningful relationships.</h2>
-          <p className={styles.founderName}>- Ashutosh Kumar Singh, Founder</p>
+          <p className={styles.founderName}>- Founder & CEO</p>
         </div>
         <div className={styles.founderImgWrapper}>
           <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Founder" className={styles.founderImg} />
