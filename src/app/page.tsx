@@ -89,16 +89,16 @@ export default function Home() {
 
       <div className={styles.trustBanner}>
         <div className={styles.trustItem}>
-          #1 Matchmaking Service
+          Exclusive Matchmaking Experience
         </div>
         <div className={styles.divider}></div>
         <div className={styles.trustItem}>
-          <span className={styles.stars}>★★★★★</span>
-          Ratings on Playstore by 2.4 lakh users
+          <span className={styles.stars}>✨✨✨✨✨</span>
+          Highly Rated by Our Early Members
         </div>
         <div className={styles.divider}></div>
         <div className={styles.trustItem}>
-          80 Lakh Success Stories
+          Real Connections, Verified Profiles
         </div>
       </div>
 
@@ -112,13 +112,13 @@ export default function Home() {
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>✓</div>
-            <h3>Blue Tick to find your Green Flag</h3>
-            <p>Did you know our blue-tick profiles get 40% more connection requests than others?</p>
+            <h3>Intention-based Matching</h3>
+            <p>See exactly what people are looking for up front—whether it's a serious relationship, casual dating, or just friends.</p>
           </div>
           <div className={styles.featureCard}>
             <div className={styles.featureIcon}>🤖</div>
-            <h3>Matchmaking Powered by AI</h3>
-            <p>Cutting-edge technology with two decades of matchmaking expertise to help you find "the one".</p>
+            <h3>Premium Privacy</h3>
+            <p>Use Incognito mode to browse completely hidden. Only the people you swipe right on will ever see your profile.</p>
           </div>
         </div>
       </section>
@@ -132,16 +132,16 @@ export default function Home() {
           </div>
         </div>
         <div style={{ flex: 1, padding: "0 20px" }}>
-          <p style={{ fontSize: "1.1rem", color: "#111", fontWeight: 500, marginBottom: "15px" }}>Experience the world of elite personalised matchmaking by synqra.com</p>
-          <Link href="/premium" className={styles.vipBtn}>Free Consultation</Link>
+          <p style={{ fontSize: "1.1rem", color: "#111", fontWeight: 500, marginBottom: "15px" }}>Experience the world of elite personalized matchmaking and exclusive privacy by Synqra.</p>
+          <Link href="/premium" className={styles.vipBtn}>Upgrade Now</Link>
         </div>
       </section>
 
       <section className={styles.founderSection}>
         <div className={styles.founderContent}>
           <div className={styles.quoteMark}>“</div>
-          <h2 className={styles.founderQuote}>At synqra.com, it is our life's mission to use technology for good and bring back deep and meaningful relationships.</h2>
-          <p className={styles.founderName}>- Ashutosh Kumar Singh, Founder & CEO</p>
+          <h2 className={styles.founderQuote}>At Synqra, it is our mission to use technology to bring back deep and meaningful relationships.</h2>
+          <p className={styles.founderName}>- Ashutosh Kumar Singh, Founder</p>
         </div>
         <div className={styles.founderImgWrapper}>
           <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Founder" className={styles.founderImg} />
@@ -150,23 +150,23 @@ export default function Home() {
 
       <section className={styles.storiesSection}>
         <div className={styles.storiesLeft}>
-          <h2>Real Stories, True Connections</h2>
-          <p>Discover how synqra.com has brought together couples through meaningful connections and shared journeys. Your success story could be next!</p>
+          <h2>Real Connections, Deep Conversations</h2>
+          <p>Discover how Synqra brings together compatible individuals through our AI-driven aura matching and dating intentions.</p>
           <Link href="/login" className={styles.searchBtn} style={{ display: "inline-block", textDecoration: "none", marginTop: "10px" }}>Know more →</Link>
         </div>
         <div className={styles.storiesGrid}>
           <div className={styles.storyCard}>
             <img src="https://images.unsplash.com/photo-1583939411023-14783179e581?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 1" className={styles.storyImg} />
             <div className={styles.storyContent}>
-              <h3>Ajinkya & Ashwini</h3>
-              <p>Thank you Synqra! I found my soulmate here. After chatting, we involved our families—now we're happily engaged!</p>
+              <h3>A Match Made in Synqra</h3>
+              <p>We met on Synqra and immediately connected over our shared interests and similar dating intentions. Best decision ever!</p>
             </div>
           </div>
           <div className={styles.storyCard}>
             <img src="https://images.unsplash.com/photo-1621801306185-1845183db7ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 2" className={styles.storyImg} />
             <div className={styles.storyContent}>
-              <h3>Rohit & Sonam</h3>
-              <p>We met on Synqra and found our perfect match. Thank you for helping me find my soulmate and begin this beautiful chapter of life!</p>
+              <h3>Meaningful Conversations</h3>
+              <p>Synqra's matching system helped me find someone who actually aligned with my values. No more pointless swiping.</p>
             </div>
           </div>
         </div>
@@ -176,10 +176,10 @@ export default function Home() {
         <h2 className={styles.sectionTitle} style={{ textAlign: "left", marginBottom: "30px" }}>Frequently Asked Questions</h2>
         
         {[
-          { q: "Why is synqra.com better compared to other websites?", a: "Synqra.com stands out as India's leading matchmaking platform with thousands of success stories. Unlike traditional sites, we offer verified profiles, personalized matching, and advanced tools." },
-          { q: "Is synqra.com a trustworthy matchmaking platform?", a: "Yes, we manually verify profiles and use AI to filter out bad actors. Your safety and privacy are our top priorities." },
-          { q: "What is the difference between free vs paid membership?", a: "Free members can create a profile and browse. Paid members can initiate chats, use Incognito Mode, and Boost their profile for maximum visibility." },
-          { q: "What additional benefits do I get as a Premium Member?", a: "Unlimited Swipes, Super Likes, Read Receipts, and Advanced Filters (Zodiac, Height, etc)." }
+          { q: "Why is Synqra better compared to other dating apps?", a: "Synqra focuses on quality over quantity. With features like Aura matching, clear Dating Intentions, and Incognito mode, we prioritize meaningful connections and privacy." },
+          { q: "Is Synqra a trustworthy platform?", a: "Yes. Our platform uses Google Firebase for secure authentication and data protection to keep your information safe." },
+          { q: "What is the difference between free vs paid membership?", a: "Free members can create a profile and browse. Paid members get access to Incognito Mode, advanced filters (Zodiac, Drinking, Smoking), and maximum profile visibility." },
+          { q: "What additional benefits do I get as a Premium Member?", a: "Premium members unlock exclusive privacy features, advanced filtering options, and priority matching." }
         ].map((faq, index) => (
           <div key={index} className={styles.faqItem}>
             <div className={styles.faqHeader} onClick={() => toggleFaq(index)}>
