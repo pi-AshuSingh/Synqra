@@ -1,5 +1,5 @@
 import { FirebaseApp, initializeApp, getApps, getApp } from "firebase/app";
-import { Auth, getAuth, initializeAuth, browserLocalPersistence } from "firebase/auth";
+import { Auth, getAuth } from "firebase/auth";
 import { Firestore, getFirestore } from "firebase/firestore";
 import { FirebaseStorage, getStorage } from "firebase/storage";
 
@@ -13,17 +13,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only once
-let app: FirebaseApp;
-let auth: Auth;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-  auth = initializeAuth(app, {
-    persistence: browserLocalPersistence
-  });
-} else {
-  app = getApp();
-  auth = getAuth(app);
-}
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth: Auth = getAuth(app);
 const db: Firestore = getFirestore(app);
 const storage: FirebaseStorage = getStorage(app);
 
