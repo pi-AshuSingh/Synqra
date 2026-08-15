@@ -26,6 +26,7 @@ function ChatContent() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
+  const [targetVerified, setTargetVerified] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,6 +64,18 @@ function ChatContent() {
 
     return () => unsubscribe();
   }, [currentUser, targetId]);
+
+  useEffect(() => {
+    if (!targetId) return;
+    const fetchTarget = async () => {
+      const { doc, getDoc } = await import("firebase/firestore");
+      const snap = await getDoc(doc(db, "users", targetId));
+      if (snap.exists() && snap.data().verificationStatus === "verified") {
+        setTargetVerified(true);
+      }
+    };
+    fetchTarget();
+  }, [targetId]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,9 +124,16 @@ function ChatContent() {
         <button className={styles.backBtn} onClick={() => router.back()}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
-        <div className={styles.profileInfo} style={{ flex: 1 }}>
+        <div className={styles.profileInfo} style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
           {targetImg && <img src={targetImg} alt={targetName} className={styles.avatar} />}
-          <div className={styles.name}>{targetName}</div>
+          <div className={styles.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            {targetName}
+            {targetVerified && (
+              <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+            )}
+          </div>
         </div>
         <button 
           onClick={handleUnmatch}

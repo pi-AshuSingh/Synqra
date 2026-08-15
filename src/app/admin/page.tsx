@@ -16,11 +16,13 @@ interface User {
   gender: string;
   createdAt: string;
   isAdmin?: boolean;
+  verificationStatus?: string;
 }
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -38,6 +40,7 @@ export default function AdminDashboard() {
         if (userDoc.exists() && userDoc.data().isAdmin === true) {
           setIsAdmin(true);
           fetchUsers();
+          fetchReports();
         } else {
           setError("Access Denied. You do not have admin privileges.");
           setLoading(false);
@@ -68,6 +71,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchReports = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "reports"));
+      const repsData: any[] = [];
+      querySnapshot.forEach((doc) => {
+        repsData.push({ id: doc.id, ...doc.data() });
+      });
+      repsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setReports(repsData);
+    } catch (err: any) {
+      console.error("Failed to fetch reports:", err);
+    }
+  };
+
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (!window.confirm(`Are you sure you want to delete ${userName}'s profile from the database?`)) {
       return;
@@ -78,6 +95,28 @@ export default function AdminDashboard() {
       setUsers(users.filter(u => u.id !== userId));
     } catch (err: any) {
       alert("Failed to delete user: " + err.message);
+    }
+  };
+
+  const handleVerifyUser = async (userId: string, currentStatus: string | undefined) => {
+    try {
+      const { updateDoc } = await import("firebase/firestore");
+      const newStatus = currentStatus === "verified" ? "none" : "verified";
+      await updateDoc(doc(db, "users", userId), {
+        verificationStatus: newStatus
+      });
+      setUsers(users.map(u => u.id === userId ? { ...u, verificationStatus: newStatus } : u));
+    } catch (err: any) {
+      alert("Failed to update verification status: " + err.message);
+    }
+  };
+
+  const handleDismissReport = async (reportId: string) => {
+    try {
+      await deleteDoc(doc(db, "reports", reportId));
+      setReports(reports.filter(r => r.id !== reportId));
+    } catch (err) {
+      alert("Failed to dismiss report.");
     }
   };
 
@@ -133,7 +172,7 @@ export default function AdminDashboard() {
               <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Gender</th>
+                <th>Verification</th>
                 <th>Joined</th>
                 <th>Actions</th>
               </tr>
@@ -142,21 +181,46 @@ export default function AdminDashboard() {
               {users.map((user) => (
                 <tr key={user.id}>
                   <td>
-                    {user.name}
-                    {user.isAdmin && <span className={`${styles.badge} ${styles.badgeAdmin}`} style={{ marginLeft: '8px' }}>ADMIN</span>}
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {user.name}
+                      {user.verificationStatus === "verified" && (
+                        <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                      )}
+                    </div>
+                    {user.isAdmin && <span className={`${styles.badge} ${styles.badgeAdmin}`} style={{ marginTop: '4px', display: 'inline-block' }}>ADMIN</span>}
                   </td>
                   <td style={{ color: "var(--text-muted)" }}>{user.email}</td>
-                  <td style={{ textTransform: "capitalize" }}>{user.gender}</td>
+                  <td>
+                    {user.verificationStatus === "pending" ? (
+                      <span style={{ color: "#eab308", fontWeight: 600 }}>Pending</span>
+                    ) : user.verificationStatus === "verified" ? (
+                      <span style={{ color: "#3b82f6" }}>Verified</span>
+                    ) : (
+                      <span style={{ color: "var(--text-muted)" }}>None</span>
+                    )}
+                  </td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
-                    {!user.isAdmin && (
-                      <button 
-                        className={styles.deleteBtn}
-                        onClick={() => handleDeleteUser(user.id, user.name)}
-                      >
-                        Delete
-                      </button>
-                    )}
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      {!user.isAdmin && (
+                        <>
+                          <button 
+                            onClick={() => handleVerifyUser(user.id, user.verificationStatus)}
+                            style={{ padding: "4px 8px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", color: user.verificationStatus === "verified" ? "white" : "#3b82f6", borderRadius: "4px", cursor: "pointer" }}
+                          >
+                            {user.verificationStatus === "verified" ? "Revoke" : "Verify"}
+                          </button>
+                          <button 
+                            className={styles.deleteBtn}
+                            onClick={() => handleDeleteUser(user.id, user.name)}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -165,6 +229,60 @@ export default function AdminDashboard() {
                 <tr>
                   <td colSpan={5} style={{ textAlign: "center", padding: "2rem" }}>
                     No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style={{ marginTop: "2rem" }}>User Reports</h3>
+        <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+          Review users that have been reported and blocked by others.
+        </p>
+
+        <div className={styles.usersTableContainer}>
+          <table className={styles.usersTable}>
+            <thead>
+              <tr>
+                <th>Reported User</th>
+                <th>Reported By</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map((report) => (
+                <tr key={report.id}>
+                  <td style={{ color: "#ef4444", fontWeight: 600 }}>{report.reportedName} ({report.reportedId})</td>
+                  <td style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{report.reporterId}</td>
+                  <td>{new Date(report.timestamp).toLocaleDateString()}</td>
+                  <td>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button 
+                        onClick={() => handleDismissReport(report.id)}
+                        style={{ padding: "4px 8px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", color: "white", borderRadius: "4px", cursor: "pointer" }}
+                      >
+                        Dismiss
+                      </button>
+                      <button 
+                        className={styles.deleteBtn}
+                        onClick={() => {
+                          handleDeleteUser(report.reportedId, report.reportedName);
+                          handleDismissReport(report.id);
+                        }}
+                      >
+                        Ban User
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              
+              {reports.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+                    No reports found. Everyone is behaving well!
                   </td>
                 </tr>
               )}

@@ -91,6 +91,19 @@ export default function Profile() {
     router.push("/");
   };
 
+  const handleRequestVerification = async () => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        verificationStatus: "pending"
+      });
+      setProfileData({ ...profileData, verificationStatus: "pending" });
+      alert("Verification request sent! An admin will review your profile.");
+    } catch (err: any) {
+      alert("Failed to request verification: " + err.message);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex-center" style={{ minHeight: "100vh" }}>
@@ -123,8 +136,28 @@ export default function Profile() {
         <div className={styles.profileCard}>
           <div className={styles.imageSection}>
             <img src={image1 || profileData.image} alt="Profile" className={styles.avatar} />
-            <h3>{profileData.name}, {profileData.age}</h3>
+            <h3 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+              {profileData.name}, {profileData.age}
+              {profileData.verificationStatus === "verified" && (
+                <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              )}
+            </h3>
             <p style={{ color: "var(--text-muted)", textTransform: "capitalize" }}>{profileData.gender}</p>
+            
+            {(!profileData.verificationStatus || profileData.verificationStatus === "none") && (
+              <button 
+                onClick={handleRequestVerification}
+                className="btn-glass" 
+                style={{ marginTop: "10px", fontSize: "0.8rem", padding: "4px 8px" }}
+              >
+                Request Verification
+              </button>
+            )}
+            {profileData.verificationStatus === "pending" && (
+              <div style={{ marginTop: "10px", fontSize: "0.8rem", color: "#eab308" }}>Verification Pending</div>
+            )}
           </div>
 
           <div className={styles.formGroup}>

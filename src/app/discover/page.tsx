@@ -19,6 +19,7 @@ type Profile = {
   tags: string[];
   image: string;
   images?: string[];
+  verificationStatus?: string;
   distance?: string;
 };
 
@@ -57,6 +58,14 @@ export default function Discover() {
   const [canRewind, setCanRewind] = useState(false);
   const [animationClass, setAnimationClass] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchCity, setSearchCity] = useState("");
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
+
+  // Reset indices when search city changes
+  useEffect(() => {
+    setCurrentIndex(0);
+    setCurrentPhotoIndex(0);
+  }, [searchCity]);
 
   // Reset photo index when swiping to new profile
   useEffect(() => {
@@ -85,6 +94,8 @@ export default function Discover() {
       const interestedIn = currentUserData?.interestedIn || "everyone";
       const minAgePref = currentUserData?.minAgePref || 18;
       const maxAgePref = currentUserData?.maxAgePref || 99;
+      const userBlockedList = currentUserData?.blockedUsers || [];
+      setBlockedIds(new Set(userBlockedList));
 
       // 1. Fetch all previous interactions to filter them out
       const interactionsSnapshot = await getDocs(collection(db, "users", uid, "interactions"));
@@ -98,8 +109,8 @@ export default function Discover() {
       usersSnapshot.forEach((docSnap) => {
         const data = docSnap.data();
         
-        // Skip current user and already interacted users and admins
-        if (docSnap.id === uid || interactedIds.has(docSnap.id) || data.isAdmin === true) {
+        // Skip current user, already interacted users, blocked users, and admins
+        if (docSnap.id === uid || interactedIds.has(docSnap.id) || data.isAdmin === true || userBlockedList.includes(docSnap.id)) {
           return;
         }
 
@@ -124,6 +135,7 @@ export default function Discover() {
           tags: data.tags || [],
           image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           images: data.images || [data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+          verificationStatus: data.verificationStatus || "none",
           distance: "Nearby"
         });
       });
@@ -228,6 +240,45 @@ export default function Discover() {
     }
   };
 
+  const handleBlock = async () => {
+    if (currentIndex >= profiles.length || !currentUser) return;
+    
+    const targetProfile = filteredProfiles[currentIndex];
+    if (!targetProfile) return;
+
+    if (confirm(`Are you sure you want to block ${targetProfile.name}? They will no longer appear in your feed.`)) {
+      try {
+        const { updateDoc, arrayUnion } = await import("firebase/firestore");
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          blockedUsers: arrayUnion(targetProfile.id)
+        });
+        
+        // Also report them
+        await setDoc(doc(db, "reports", `${currentUser.uid}_${targetProfile.id}`), {
+          reporterId: currentUser.uid,
+          reportedId: targetProfile.id,
+          reportedName: targetProfile.name,
+          timestamp: new Date().toISOString(),
+          status: "pending"
+        });
+
+        alert("User blocked and reported.");
+        
+        // Skip this user
+        setAnimationClass(styles.slideLeft);
+        setTimeout(() => {
+          setCurrentIndex(prev => prev + 1);
+          setAnimationClass("");
+        }, 300);
+      } catch (err) {
+        console.error("Error blocking user:", err);
+      }
+    }
+  };
+
+  const filteredProfiles = profiles.filter(p => !searchCity || p.city?.toLowerCase().includes(searchCity.toLowerCase()));
+  const currentProfile = currentIndex >= 0 && currentIndex < filteredProfiles.length ? filteredProfiles[currentIndex] : null;
+
   if (loading) {
     return (
       <main className={styles.container}>
@@ -238,7 +289,6 @@ export default function Discover() {
     );
   }
 
-  const currentProfile = currentIndex >= 0 && currentIndex < profiles.length ? profiles[currentIndex] : null;
 
   return (
     <main className={styles.container}>
@@ -256,6 +306,16 @@ export default function Discover() {
           </Link>
         </div>
       </header>
+
+      <div style={{ padding: "10px 20px" }}>
+        <input 
+          type="text" 
+          placeholder="Search by city (e.g. Bangalore)..." 
+          value={searchCity}
+          onChange={e => setSearchCity(e.target.value)}
+          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--glass-bg)", color: "white" }}
+        />
+      </div>
 
       <div className={styles.cardContainer}>
         {currentProfile ? (
@@ -296,10 +356,23 @@ export default function Discover() {
 
             <div className={styles.cardOverlay} style={{ zIndex: 2, pointerEvents: "none" }}>
               <div className={styles.profileInfo}>
-                <div className={styles.nameAge}>
-                  <h2>{currentProfile.name}, {currentProfile.age}</h2>
-                  {currentProfile.city && <span className={styles.distance}>{currentProfile.city}</span>}
+                <div className={styles.nameAge} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <h2 style={{ margin: 0 }}>{currentProfile.name}, {currentProfile.age}</h2>
+                    {currentProfile.verificationStatus === "verified" && (
+                      <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleBlock(); }}
+                    style={{ pointerEvents: "auto", background: "rgba(0,0,0,0.5)", border: "none", color: "#ef4444", padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer" }}
+                  >
+                    Block
+                  </button>
                 </div>
+                {currentProfile.city && <div className={styles.distance} style={{ marginBottom: "8px" }}>{currentProfile.city}</div>}
                 
                 {currentProfile.lookingFor && (
                   <div style={{ fontSize: "0.875rem", color: "var(--primary-color)", fontWeight: 600, marginBottom: "8px" }}>
