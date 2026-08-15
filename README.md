@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/pi-AshuSingh/Synqra/main/public/icon.svg" alt="Synqra Logo" width="120" height="120" />
-  <h1>Synqra 2.0</h1>
+  <h1>Synqra</h1>
   <p><strong>A Modern, Fast, and Free Dating App for the Indian Market</strong></p>
   
   [![Website](https://img.shields.io/website?url=https%3A%2F%2Fsynqra-4you.web.app&logo=firebase)](https://synqra-4you.web.app)
