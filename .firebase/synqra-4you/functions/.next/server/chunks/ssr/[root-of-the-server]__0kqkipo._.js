@@ -1,0 +1,3 @@
+module.exports=[48697,a=>{a.v({className:"outfit_65ef3991-module__0M5O7q__className",variable:"outfit_65ef3991-module__0M5O7q__variable"})},27572,a=>{"use strict";var b=a.i(7997),c=a.i(48697);let d={className:c.default.className,style:{fontFamily:"'Outfit', 'Outfit Fallback'",fontStyle:"normal"}};null!=c.default.variable&&(d.variable=c.default.variable),a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{className:`${d.variable} antialiased`,children:a})})},"metadata",0,{title:"Synqra | Find Your Perfect Match",description:"A premium dating experience where chemistry meets algorithm."}],27572)},50645,function(a){a.n(a.i(27572))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0kqkipo._.js.map

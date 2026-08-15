@@ -1,0 +1,109 @@
+.main {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+.blob1, .blob2 {
+  position: absolute;
+  filter: blur(100px);
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0.5;
+  animation: float 10s ease-in-out infinite;
+}
+
+.blob1 {
+  top: -10%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, var(--primary-color) 0%, rgba(247,37,133,0) 70%);
+}
+
+.blob2 {
+  bottom: -20%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, var(--tertiary-color) 0%, rgba(67,97,238,0) 70%);
+  animation-delay: -5s;
+}
+
+.heroCard {
+  max-width: 700px;
+  text-align: center;
+  padding: var(--spacing-xxl) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logoBadge {
+  background: var(--gradient-brand);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-sm);
+  display: inline-block;
+}
+
+.title {
+  margin-bottom: var(--spacing-sm);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  max-width: 500px;
+  margin: 0 auto var(--spacing-md);
+}
+
+.ctaGroup {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--glass-border);
+  width: 100%;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.divider {
+  width: 1px;
+  height: 40px;
+  background-color: var(--glass-border);
+}

@@ -1,0 +1,207 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-color);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.premiumBadge {
+  background: var(--gradient-brand);
+  color: white;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform var(--transition-fast);
+}
+
+.premiumBadge:hover {
+  transform: scale(1.05);
+}
+
+.cardContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  position: relative;
+}
+
+.profileCard {
+  width: 100%;
+  max-width: 400px;
+  height: 65vh;
+  max-height: 600px;
+  border-radius: var(--radius-lg);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  border: 1px solid var(--glass-border);
+}
+
+.slideLeft {
+  transform: translateX(-150%) rotate(-15deg);
+  opacity: 0;
+}
+
+.slideRight {
+  transform: translateX(150%) rotate(15deg);
+  opacity: 0;
+}
+
+.cardOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+  padding: var(--spacing-xxl) var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.profileInfo {
+  color: white;
+}
+
+.nameAge {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.nameAge h2 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.distance {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.bio {
+  font-size: 1rem;
+  margin-bottom: var(--spacing-md);
+  color: rgba(255, 255, 255, 0.9);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  padding: 0 var(--spacing-lg) var(--spacing-xl);
+}
+
+.actionBtn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  color: white;
+  transition: all var(--transition-fast);
+}
+
+.actionBtn:hover {
+  transform: scale(1.1);
+}
+
+.passBtn:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sparkBtn {
+  color: var(--primary-color);
+  border-color: rgba(247, 37, 133, 0.3);
+}
+
+.sparkBtn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 20px rgba(247, 37, 133, 0.4);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--spacing-xxl) !important;
+  width: 100%;
+  max-width: 400px;
+}
+
+.pulseRing {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  margin-bottom: var(--spacing-xl);
+  position: relative;
+}
+
+.pulseRing::before, .pulseRing::after {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  border: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: pulse 2s linear infinite;
+  opacity: 0;
+}
+
+.pulseRing::after {
+  animation-delay: 1s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
