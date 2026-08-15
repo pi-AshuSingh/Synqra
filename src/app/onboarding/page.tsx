@@ -43,6 +43,8 @@ export default function Onboarding() {
   
   // Photo state
   const [photoUrl, setPhotoUrl] = useState("");
+  const [photoUrl2, setPhotoUrl2] = useState("");
+  const [photoUrl3, setPhotoUrl3] = useState("");
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -90,7 +92,10 @@ export default function Onboarding() {
         
         // 2. We skip Firebase Storage since it requires a credit card.
         // We use the image URL they pasted, or a fallback.
-        let finalImageUrl = photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+        let finalImageUrl1 = photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+        let imagesArray = [finalImageUrl1];
+        if (photoUrl2) imagesArray.push(photoUrl2);
+        if (photoUrl3) imagesArray.push(photoUrl3);
         
         // 3. Save to Firestore
         await setDoc(doc(db, "users", user.uid), {
@@ -103,7 +108,8 @@ export default function Onboarding() {
           lookingFor,
           bio,
           tags: selectedTags,
-          image: finalImageUrl,
+          image: finalImageUrl1, // Legacy fallback
+          images: imagesArray,
           minAgePref: 18,
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
@@ -192,7 +198,7 @@ export default function Onboarding() {
             <p className={styles.subtitle}>Add a profile photo and write a bio.</p>
             
             <div className={styles.formGroup}>
-              <label>Profile Image URL</label>
+              <label>Profile Image URL (Primary)</label>
               <input 
                 type="text" 
                 className={styles.input} 
@@ -203,6 +209,26 @@ export default function Onboarding() {
               {photoUrl && (
                 <div style={{ marginTop: "1rem", textAlign: "center" }}>
                   <img src={photoUrl} alt="Preview" style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--primary-color)" }} />
+                </div>
+              )}
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
+              <label>Additional Photo URL 2 (Optional)</label>
+              <input type="url" className={styles.input} placeholder="https://example.com/photo2.jpg" value={photoUrl2} onChange={e => setPhotoUrl2(e.target.value)} />
+              {photoUrl2 && (
+                <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
+                  <img src={photoUrl2} alt="Preview 2" style={{ width: "80px", height: "80px", borderRadius: "8px", objectFit: "cover", border: "1px solid var(--glass-border)" }} />
+                </div>
+              )}
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
+              <label>Additional Photo URL 3 (Optional)</label>
+              <input type="url" className={styles.input} placeholder="https://example.com/photo3.jpg" value={photoUrl3} onChange={e => setPhotoUrl3(e.target.value)} />
+              {photoUrl3 && (
+                <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
+                  <img src={photoUrl3} alt="Preview 3" style={{ width: "80px", height: "80px", borderRadius: "8px", objectFit: "cover", border: "1px solid var(--glass-border)" }} />
                 </div>
               )}
             </div>

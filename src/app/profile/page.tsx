@@ -22,6 +22,9 @@ export default function Profile() {
   const [lookingFor, setLookingFor] = useState("");
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(99);
+  const [image1, setImage1] = useState("");
+  const [image2, setImage2] = useState("");
+  const [image3, setImage3] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -43,6 +46,10 @@ export default function Profile() {
           setLookingFor(data.lookingFor || "");
           setMinAge(data.minAgePref || 18);
           setMaxAge(data.maxAgePref || 99);
+          
+          setImage1(data.images?.[0] || data.image || "");
+          setImage2(data.images?.[1] || "");
+          setImage3(data.images?.[2] || "");
         }
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -58,12 +65,18 @@ export default function Profile() {
     if (!user) return;
     setSaving(true);
     try {
+      const newImages = [image1];
+      if (image2) newImages.push(image2);
+      if (image3) newImages.push(image3);
+
       await updateDoc(doc(db, "users", user.uid), {
         bio,
         city,
         lookingFor,
         minAgePref: minAge,
-        maxAgePref: maxAge
+        maxAgePref: maxAge,
+        image: image1, // fallback
+        images: newImages
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -109,9 +122,22 @@ export default function Profile() {
       {profileData && (
         <div className={styles.profileCard}>
           <div className={styles.imageSection}>
-            <img src={profileData.image} alt="Profile" className={styles.avatar} />
+            <img src={image1 || profileData.image} alt="Profile" className={styles.avatar} />
             <h3>{profileData.name}, {profileData.age}</h3>
             <p style={{ color: "var(--text-muted)", textTransform: "capitalize" }}>{profileData.gender}</p>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Photo 1 (Primary)</label>
+            <input type="url" className={styles.input} value={image1} onChange={e => setImage1(e.target.value)} />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Photo 2</label>
+            <input type="url" className={styles.input} value={image2} onChange={e => setImage2(e.target.value)} />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Photo 3</label>
+            <input type="url" className={styles.input} value={image3} onChange={e => setImage3(e.target.value)} />
           </div>
 
           <div className={styles.formGroup}>

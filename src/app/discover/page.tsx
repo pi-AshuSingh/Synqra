@@ -18,6 +18,7 @@ type Profile = {
   bio: string;
   tags: string[];
   image: string;
+  images?: string[];
   distance?: string;
 };
 
@@ -52,8 +53,15 @@ export default function Discover() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [canRewind, setCanRewind] = useState(false);
   const [animationClass, setAnimationClass] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Reset photo index when swiping to new profile
+  useEffect(() => {
+    setCurrentPhotoIndex(0);
+  }, [currentIndex]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -115,6 +123,7 @@ export default function Discover() {
           bio: data.bio || "No bio yet.",
           tags: data.tags || [],
           image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          images: data.images || [data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
           distance: "Nearby"
         });
       });
@@ -136,7 +145,7 @@ export default function Discover() {
     }
   };
 
-  const handleAction = async (type: "pass" | "like") => {
+  const handleAction = async (type: "pass" | "like" | "super_like") => {
     if (currentIndex >= profiles.length || !currentUser) return;
     
     const targetProfile = profiles[currentIndex];
@@ -151,10 +160,11 @@ export default function Discover() {
         timestamp: new Date().toISOString()
       });
 
-      // If it's a 'like', also double-write to the target user's receivedLikes
-      if (type === "like") {
+      // If it's a 'like' or 'super_like', also double-write to the target user's receivedLikes
+      if (type === "like" || type === "super_like") {
         await setDoc(doc(db, "users", targetProfile.id, "receivedLikes", currentUser.uid), {
           sourceId: currentUser.uid,
+          type: type,
           timestamp: new Date().toISOString()
         });
       }
@@ -162,8 +172,19 @@ export default function Discover() {
       console.error("Failed to save interaction", err);
     }
     
-    // Animate out
-    setAnimationClass(type === "pass" ? styles.slideLeft : styles.slideRight);
+    // Enable rewind if it was a pass
+    if (type === "pass") {
+      setCanRewind(true);
+    } else {
+      setCanRewind(false);
+    }
+
+    // Animate out (super like animates up)
+    if (type === "super_like") {
+      setAnimationClass(styles.slideUp);
+    } else {
+      setAnimationClass(type === "pass" ? styles.slideLeft : styles.slideRight);
+    }
     
     setTimeout(() => {
       if (currentIndex < profiles.length - 1) {
@@ -174,6 +195,37 @@ export default function Discover() {
         setCurrentIndex(-1);
       }
     }, 300);
+  };
+
+  const handleRewind = async () => {
+    if (!canRewind || currentIndex <= 0 || !currentUser) return;
+    
+    const previousIndex = currentIndex - 1;
+    const targetProfile = profiles[previousIndex];
+
+    try {
+      // Delete the 'pass' interaction from Firestore
+      const { deleteDoc } = await import("firebase/firestore");
+      await deleteDoc(doc(db, "users", currentUser.uid, "interactions", targetProfile.id));
+      
+      // Go back
+      setCurrentIndex(previousIndex);
+      setCanRewind(false);
+      setAnimationClass("");
+    } catch (err) {
+      console.error("Failed to rewind", err);
+    }
+  };
+
+  const cyclePhoto = (direction: "left" | "right") => {
+    if (!currentProfile || !currentProfile.images) return;
+    
+    const maxIndex = currentProfile.images.length - 1;
+    if (direction === "left") {
+      setCurrentPhotoIndex(prev => Math.max(0, prev - 1));
+    } else {
+      setCurrentPhotoIndex(prev => Math.min(maxIndex, prev + 1));
+    }
   };
 
   if (loading) {
@@ -207,8 +259,42 @@ export default function Discover() {
 
       <div className={styles.cardContainer}>
         {currentProfile ? (
-          <div className={`${styles.profileCard} ${animationClass}`} style={{ backgroundImage: `url(${currentProfile.image})` }}>
-            <div className={styles.cardOverlay}>
+          <div className={`${styles.profileCard} ${animationClass}`}>
+            <img 
+              src={currentProfile.images?.[currentPhotoIndex] || currentProfile.image} 
+              alt={currentProfile.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, zIndex: 0 }}
+            />
+            
+            {/* Photo Navigation Overlays */}
+            <div 
+              style={{ position: "absolute", top: 0, left: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
+              onClick={() => cyclePhoto("left")}
+            />
+            <div 
+              style={{ position: "absolute", top: 0, right: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
+              onClick={() => cyclePhoto("right")}
+            />
+
+            {/* Photo Indicators */}
+            {currentProfile.images && currentProfile.images.length > 1 && (
+              <div style={{ position: "absolute", top: "10px", left: 0, right: 0, display: "flex", gap: "4px", padding: "0 10px", zIndex: 2 }}>
+                {currentProfile.images.map((_, i) => (
+                  <div 
+                    key={i} 
+                    style={{ 
+                      flex: 1, 
+                      height: "4px", 
+                      background: i === currentPhotoIndex ? "white" : "rgba(255,255,255,0.4)",
+                      borderRadius: "2px",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.3)"
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className={styles.cardOverlay} style={{ zIndex: 2, pointerEvents: "none" }}>
               <div className={styles.profileInfo}>
                 <div className={styles.nameAge}>
                   <h2>{currentProfile.name}, {currentProfile.age}</h2>
@@ -245,9 +331,27 @@ export default function Discover() {
 
       {currentProfile && (
         <div className={styles.actions}>
+          <button 
+            className={`${styles.actionBtn}`} 
+            onClick={handleRewind}
+            disabled={!canRewind}
+            style={{ 
+              color: canRewind ? "#eab308" : "#9ca3af", 
+              borderColor: canRewind ? "rgba(234, 179, 8, 0.3)" : "var(--glass-border)",
+              cursor: canRewind ? "pointer" : "not-allowed"
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          </button>
+          
           <button className={`${styles.actionBtn} ${styles.passBtn}`} onClick={() => handleAction("pass")}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
+          
+          <button className={`${styles.actionBtn} ${styles.superBtn}`} onClick={() => handleAction("super_like")} style={{ color: "#3b82f6", borderColor: "rgba(59, 130, 246, 0.3)" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </button>
+
           <button className={`${styles.actionBtn} ${styles.sparkBtn}`} onClick={() => handleAction("like")}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
