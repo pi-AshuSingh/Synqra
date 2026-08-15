@@ -28,24 +28,12 @@ export default function Home() {
           </p>
           
           <div className={styles.ctaGroup}>
-            <Link href="/onboarding" className="btn-primary">
-              Join Synqra
+            <Link href="/discover" className="btn-primary">
+              Start Discovering
             </Link>
             <Link href="/login" className="btn-glass">
               Sign In
             </Link>
-          </div>
-          
-          <div className={styles.stats}>
-            <div className={styles.statItem}>
-              <span className={styles.statNumber}>10k+</span>
-              <span className={styles.statLabel}>Active Matches</span>
-            </div>
-            <div className={styles.divider}></div>
-            <div className={styles.statItem}>
-              <span className={styles.statNumber}>98%</span>
-              <span className={styles.statLabel}>Success Rate</span>
-            </div>
           </div>
         </div>
       </div>

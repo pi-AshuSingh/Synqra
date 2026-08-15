@@ -39,13 +39,16 @@ export default function Onboarding() {
   const handleNext = async () => {
     setError("");
     if (step === 1) {
-      if (!email || !password || !name || !gender) {
+      if (!name || !gender) {
         return setError("Please fill out all fields.");
       }
       setStep(2);
     } else if (step === 2) {
       setStep(3);
     } else if (step === 3) {
+      if (!email || !password) {
+        return setError("Please enter your email and password.");
+      }
       // Final step: Create user and save to Firestore
       setLoading(true);
       try {
@@ -90,16 +93,6 @@ export default function Onboarding() {
             <p className={styles.subtitle}>Let's set up your profile.</p>
             
             <div className={styles.formGroup}>
-              <label>Email</label>
-              <input type="email" className={styles.input} placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            
-            <div className={styles.formGroup}>
-              <label>Password</label>
-              <input type="password" className={styles.input} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            
-            <div className={styles.formGroup}>
               <label>First Name</label>
               <input type="text" className={styles.input} placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)} />
             </div>
@@ -118,37 +111,50 @@ export default function Onboarding() {
 
         {step === 2 && (
           <div className="animate-fade-in">
-            <h2 className="text-gradient">Your Vibe</h2>
-            <p className={styles.subtitle}>Write a short bio to attract your match.</p>
+            <h2 className="text-gradient">Your Vibe & Aura</h2>
+            <p className={styles.subtitle}>Write a short bio and pick your traits.</p>
             
             <div className={styles.formGroup}>
               <label>Bio</label>
               <textarea 
                 className={styles.input} 
-                rows={4} 
+                rows={3} 
                 placeholder="I love late night drives and deep conversations..."
                 value={bio}
                 onChange={e => setBio(e.target.value)}
               ></textarea>
+            </div>
+
+            <div className={styles.formGroup} style={{ marginTop: "1.5rem" }}>
+              <label>Pick up to 3 traits</label>
+              <div className={styles.tagsContainer} style={{ marginTop: "0.5rem" }}>
+                {AURA_TAGS.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => toggleTag(tag)}
+                    className={`${styles.tag} ${selectedTags.includes(tag) ? styles.tagSelected : ''}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="animate-fade-in">
-            <h2 className="text-gradient">Your Aura</h2>
-            <p className={styles.subtitle}>Pick up to 3 traits that define you.</p>
+            <h2 className="text-gradient">Save Your Profile</h2>
+            <p className={styles.subtitle}>Create an account to save your progress.</p>
             
-            <div className={styles.tagsContainer}>
-              {AURA_TAGS.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`${styles.tag} ${selectedTags.includes(tag) ? styles.tagSelected : ''}`}
-                >
-                  {tag}
-                </button>
-              ))}
+            <div className={styles.formGroup} style={{ marginTop: "1rem" }}>
+              <label>Email</label>
+              <input type="email" className={styles.input} placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            
+            <div className={styles.formGroup}>
+              <label>Password</label>
+              <input type="password" className={styles.input} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
           </div>
         )}
