@@ -47,13 +47,13 @@ const MOCK_PROFILES: Profile[] = [
   },
   {
     id: "mock2",
-    name: "Rohan",
-    age: 29,
+    name: "Riya",
+    age: 26,
     city: "Delhi",
     lookingFor: "Something Casual",
     bio: "Techie by day, amateur photographer by night. Looking for someone to explore Delhi cafes with.",
     tags: ["Adventurous", "Analytical", "Outgoing"],
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     distance: "12 km away"
   }
 ];
