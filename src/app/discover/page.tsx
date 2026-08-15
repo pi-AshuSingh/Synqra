@@ -43,7 +43,9 @@ const MOCK_PROFILES: Profile[] = [
     bio: "UX Designer in Bangalore. Love masala chai, indie music, and weekend road trips.",
     tags: ["Creative", "Spontaneous", "Chill"],
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    distance: "5 km away"
+    images: ["https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "5 km away",
+    matchScore: 92
   },
   {
     id: "mock2",
@@ -54,13 +56,42 @@ const MOCK_PROFILES: Profile[] = [
     bio: "Techie by day, amateur photographer by night. Looking for someone to explore Delhi cafes with.",
     tags: ["Adventurous", "Analytical", "Outgoing"],
     image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    distance: "12 km away"
+    images: ["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "12 km away",
+    matchScore: 88
+  },
+  {
+    id: "mock3",
+    name: "Priya",
+    age: 24,
+    city: "Mumbai",
+    lookingFor: "Serious Relationship",
+    bio: "Always up for a beach walk or a coffee date. Passionate about sustainability and mindful living.",
+    tags: ["Nature Lover", "Coffee Addict", "Fitness"],
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "2 km away",
+    matchScore: 95
+  },
+  {
+    id: "mock4",
+    name: "Neha",
+    age: 27,
+    city: "Pune",
+    lookingFor: "Marriage",
+    bio: "Software engineer who loves baking on weekends. Let's debate which pizza topping is best.",
+    tags: ["Foodie", "Tech", "Introvert"],
+    image: "https://images.unsplash.com/photo-1599839619722-39751411ea63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1599839619722-39751411ea63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "8 km away",
+    matchScore: 80
   }
 ];
 
 export default function Discover() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -93,9 +124,13 @@ export default function Discover() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
+        setIsGuest(false);
         await fetchProfiles(user.uid);
       } else {
-        router.push("/login");
+        setCurrentUser(null);
+        setIsGuest(true);
+        setProfiles(MOCK_PROFILES);
+        setLoading(false);
       }
     });
     return () => unsubscribe();
@@ -239,41 +274,54 @@ export default function Discover() {
   };
 
   const handleAction = async (type: "pass" | "like" | "super_like") => {
-    if (currentIndex >= profiles.length || !currentUser) return;
+    if (currentIndex >= profiles.length) return;
     
-    if (type === "super_like" && !isPremium && superLikesUsed >= 1) {
+    if (isGuest) {
+      if (type === "like" || type === "super_like") {
+        if (confirm("Log in to connect and send likes!")) {
+          router.push("/login");
+        }
+        return;
+      }
+    }
+    
+    if (!currentUser && !isGuest) return;
+    
+    if (type === "super_like" && !isPremium && superLikesUsed >= 1 && !isGuest) {
       if (confirm("You have used your free Super Like for today! Upgrade to Premium for unlimited Super Likes.")) {
         router.push("/premium");
       }
       return;
     }
 
-    if (type === "super_like") {
+    if (type === "super_like" && !isGuest) {
       setSuperLikesUsed(prev => prev + 1);
     }
     
     const targetProfile = profiles[currentIndex];
     
-    // Save to Firestore
-    try {
-      await setDoc(doc(db, "users", currentUser.uid, "interactions", targetProfile.id), {
-        type: type,
-        targetId: targetProfile.id,
-        targetName: targetProfile.name,
-        targetImage: targetProfile.image,
-        timestamp: new Date().toISOString()
-      });
-
-      // If it's a 'like' or 'super_like', also double-write to the target user's receivedLikes
-      if (type === "like" || type === "super_like") {
-        await setDoc(doc(db, "users", targetProfile.id, "receivedLikes", currentUser.uid), {
-          sourceId: currentUser.uid,
+    // Save to Firestore if authenticated
+    if (!isGuest && currentUser) {
+      try {
+        await setDoc(doc(db, "users", currentUser.uid, "interactions", targetProfile.id), {
           type: type,
+          targetId: targetProfile.id,
+          targetName: targetProfile.name,
+          targetImage: targetProfile.image,
           timestamp: new Date().toISOString()
         });
+
+        // If it's a 'like' or 'super_like', also double-write to the target user's receivedLikes
+        if (type === "like" || type === "super_like") {
+          await setDoc(doc(db, "users", targetProfile.id, "receivedLikes", currentUser.uid), {
+            sourceId: currentUser.uid,
+            type: type,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (err) {
+        console.error("Failed to save interaction", err);
       }
-    } catch (err) {
-      console.error("Failed to save interaction", err);
     }
     
     // Enable rewind if it was a pass
@@ -302,9 +350,19 @@ export default function Discover() {
   };
 
   const handleRewind = async () => {
-    if (!canRewind || currentIndex <= 0 || !currentUser) return;
+    if (!canRewind || currentIndex <= 0) return;
     
     const previousIndex = currentIndex - 1;
+    
+    if (isGuest) {
+      setCurrentIndex(previousIndex);
+      setCanRewind(false);
+      setAnimationClass("");
+      return;
+    }
+
+    if (!currentUser) return;
+    
     const targetProfile = profiles[previousIndex];
 
     try {
@@ -333,7 +391,16 @@ export default function Discover() {
   };
 
   const handleBlock = async () => {
-    if (currentIndex >= profiles.length || !currentUser) return;
+    if (currentIndex >= profiles.length) return;
+    
+    if (isGuest) {
+      if (confirm("Log in to block or report users!")) {
+        router.push("/login");
+      }
+      return;
+    }
+
+    if (!currentUser) return;
     
     const targetProfile = filteredProfiles[currentIndex];
     if (!targetProfile) return;
@@ -373,6 +440,13 @@ export default function Discover() {
   };
 
   const handleFilterChange = (setter: any, value: string) => {
+    if (isGuest) {
+      if (confirm("Log in to use Advanced Filtering and find your perfect match!")) {
+        router.push("/login");
+      }
+      return;
+    }
+    
     if (!isPremium) {
       if (confirm("Advanced Filtering is a Premium feature! Upgrade now to find your perfect match.")) {
         router.push("/premium");
@@ -408,13 +482,13 @@ export default function Discover() {
       <header className={styles.header}>
         <Logo size={28} />
         <div style={{ display: "flex", gap: "10px" }}>
-          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+          <Link href={isGuest ? "/login" : "/sparks"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Sparks ✨
           </Link>
-          <Link href="/matches" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+          <Link href={isGuest ? "/login" : "/matches"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Matches
           </Link>
-          <Link href="/profile" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+          <Link href={isGuest ? "/login" : "/profile"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Profile
           </Link>
         </div>
@@ -614,11 +688,23 @@ export default function Discover() {
         ) : (
           <div className={`glass-card ${styles.emptyState}`}>
             <div className={styles.pulseRing}></div>
-            <h3>You've seen everyone!</h3>
-            <p>Check back later for more matches.</p>
-            <button className="btn-primary" onClick={() => window.location.reload()} style={{ marginTop: "20px" }}>
-              Refresh
-            </button>
+            {isGuest ? (
+              <>
+                <h3>Want to see more?</h3>
+                <p>Join Synqra to unlock thousands of profiles and find your perfect match!</p>
+                <Link href="/login" className="btn-primary" style={{ marginTop: "20px", display: "inline-block", textDecoration: "none" }}>
+                  Log In / Sign Up
+                </Link>
+              </>
+            ) : (
+              <>
+                <h3>You've seen everyone!</h3>
+                <p>Check back later for more matches.</p>
+                <button className="btn-primary" onClick={() => window.location.reload()} style={{ marginTop: "20px" }}>
+                  Refresh
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
