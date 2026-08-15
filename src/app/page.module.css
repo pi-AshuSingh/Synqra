@@ -25,7 +25,7 @@
   position: relative;
   height: 90vh;
   min-height: 600px;
-  background-image: url('https://images.unsplash.com/photo-1583939000340-c6e8e22a4658?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+  background-image: url('https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
   background-size: cover;
   background-position: center 20%;
   display: flex;
