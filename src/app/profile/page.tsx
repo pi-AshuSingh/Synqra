@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
@@ -136,6 +136,23 @@ export default function Profile() {
     }
   };
 
+  const handleBoost = async () => {
+    if (!user) return;
+    if (!profileData?.isPremium) {
+      router.push("/premium");
+      return;
+    }
+    
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        boostedAt: serverTimestamp()
+      });
+      alert("⚡ Profile Boosted! You will be shown first to everyone for the next 30 minutes.");
+    } catch (err: any) {
+      alert("Failed to boost: " + err.message);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex-center" style={{ minHeight: "100vh" }}>
@@ -194,17 +211,26 @@ export default function Profile() {
               )}
             </div>
 
-            {(!profileData.verificationStatus || profileData.verificationStatus === "none") && (
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "16px" }}>
+              {(!profileData.verificationStatus || profileData.verificationStatus === "none") && (
+                <button 
+                  onClick={handleRequestVerification}
+                  className="btn-glass" 
+                  style={{ fontSize: "0.8rem", padding: "6px 12px" }}
+                >
+                  Request Verification
+                </button>
+              )}
               <button 
-                onClick={handleRequestVerification}
+                onClick={handleBoost}
                 className="btn-glass" 
-                style={{ marginTop: "16px", fontSize: "0.8rem", padding: "4px 8px" }}
+                style={{ fontSize: "0.8rem", padding: "6px 12px", background: "linear-gradient(45deg, #a855f7, #ec4899)", border: "none" }}
               >
-                Request Verification
+                ⚡ Boost
               </button>
-            )}
+            </div>
             {profileData.verificationStatus === "pending" && (
-              <div style={{ marginTop: "10px", fontSize: "0.8rem", color: "#eab308" }}>Verification Pending</div>
+              <div style={{ marginTop: "10px", fontSize: "0.8rem", color: "#eab308", textAlign: "center" }}>Verification Pending</div>
             )}
           </div>
 

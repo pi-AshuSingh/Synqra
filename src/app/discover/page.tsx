@@ -28,6 +28,8 @@ type Profile = {
   matchScore?: number;
   prompt?: string;
   promptAnswer?: string;
+  isBoosted?: boolean;
+  isNewHere?: boolean;
 };
 
 // Fallback mock profiles in case Firestore is empty or not configured yet
@@ -70,11 +72,17 @@ export default function Discover() {
   const [isPremium, setIsPremium] = useState(false);
   const [superLikesUsed, setSuperLikesUsed] = useState(0);
 
-  // Reset indices when search city changes
+  // Advanced Filters
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterZodiac, setFilterZodiac] = useState("");
+  const [filterDrinking, setFilterDrinking] = useState("");
+  const [filterSmoking, setFilterSmoking] = useState("");
+
+  // Reset indices when search or filters change
   useEffect(() => {
     setCurrentIndex(0);
     setCurrentPhotoIndex(0);
-  }, [searchCity]);
+  }, [searchCity, filterZodiac, filterDrinking, filterSmoking]);
 
   // Reset photo index when swiping to new profile
   useEffect(() => {
@@ -155,6 +163,24 @@ export default function Discover() {
         // Cap at 99
         if (score > 99) score = 99;
 
+        // Check New Here (last 7 days)
+        let isNewHere = false;
+        if (data.createdAt) {
+          const createdDate = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+          if (new Date().getTime() - createdDate.getTime() < 7 * 24 * 60 * 60 * 1000) {
+            isNewHere = true;
+          }
+        }
+
+        // Check Boosted (last 30 minutes)
+        let isBoosted = false;
+        if (data.boostedAt) {
+          const boostedDate = data.boostedAt.toDate ? data.boostedAt.toDate() : new Date(data.boostedAt);
+          if (new Date().getTime() - boostedDate.getTime() < 30 * 60 * 1000) {
+            isBoosted = true;
+          }
+        }
+
         fetchedProfiles.push({
           id: docSnap.id,
           name: data.name || "Unknown",
@@ -173,12 +199,18 @@ export default function Discover() {
           smoking: data.smoking || "",
           prompt: data.prompt || "",
           promptAnswer: data.promptAnswer || "",
-          matchScore: score
+          matchScore: score,
+          isBoosted,
+          isNewHere
         });
       });
       
-      // Shuffle profiles for randomness
-      const shuffled = fetchedProfiles.sort(() => 0.5 - Math.random());
+      // Shuffle profiles for randomness, but put boosted profiles first
+      const shuffled = fetchedProfiles.sort((a, b) => {
+        if (a.isBoosted && !b.isBoosted) return -1;
+        if (!a.isBoosted && b.isBoosted) return 1;
+        return 0.5 - Math.random();
+      });
       
       if (shuffled.length > 0) {
         setProfiles(shuffled);
@@ -315,8 +347,12 @@ export default function Discover() {
         // Skip this user
         setAnimationClass(styles.slideLeft);
         setTimeout(() => {
-          setCurrentIndex(prev => prev + 1);
-          setAnimationClass("");
+          if (currentIndex < filteredProfiles.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+            setAnimationClass("");
+          } else {
+            setCurrentIndex(-1);
+          }
         }, 300);
       } catch (err) {
         console.error("Error blocking user:", err);
@@ -324,7 +360,24 @@ export default function Discover() {
     }
   };
 
-  const filteredProfiles = profiles.filter(p => !searchCity || p.city?.toLowerCase().includes(searchCity.toLowerCase()));
+  const handleFilterChange = (setter: any, value: string) => {
+    if (!isPremium) {
+      if (confirm("Advanced Filtering is a Premium feature! Upgrade now to find your perfect match.")) {
+        router.push("/premium");
+      }
+      return;
+    }
+    setter(value);
+  };
+
+  const filteredProfiles = profiles.filter(p => {
+    if (searchCity && !p.city?.toLowerCase().includes(searchCity.toLowerCase())) return false;
+    if (filterZodiac && p.zodiac !== filterZodiac) return false;
+    if (filterDrinking && p.drinking !== filterDrinking) return false;
+    if (filterSmoking && p.smoking !== filterSmoking) return false;
+    return true;
+  });
+  
   const currentProfile = currentIndex >= 0 && currentIndex < filteredProfiles.length ? filteredProfiles[currentIndex] : null;
 
   if (loading) {
@@ -356,13 +409,63 @@ export default function Discover() {
       </header>
 
       <div style={{ padding: "10px 20px" }}>
-        <input 
-          type="text" 
-          placeholder="Search by city (e.g. Bangalore)..." 
-          value={searchCity}
-          onChange={e => setSearchCity(e.target.value)}
-          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--glass-bg)", color: "white" }}
-        />
+        <div style={{ display: "flex", gap: "10px" }}>
+          <input 
+            type="text" 
+            placeholder="Search by city..." 
+            value={searchCity}
+            onChange={e => setSearchCity(e.target.value)}
+            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--glass-bg)", color: "white" }}
+          />
+          <button 
+            className="btn-glass" 
+            onClick={() => setShowFilters(!showFilters)}
+            style={{ padding: "0 15px", borderRadius: "8px", border: showFilters ? "1px solid var(--primary-color)" : "1px solid var(--glass-border)" }}
+          >
+            Filters ⚡
+          </button>
+        </div>
+
+        {showFilters && (
+          <div style={{ marginTop: "10px", padding: "12px", background: "rgba(20,20,25,0.8)", borderRadius: "8px", border: "1px solid var(--primary-color)", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "120px" }}>
+              <label style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Zodiac</label>
+              <select value={filterZodiac} onChange={(e) => handleFilterChange(setFilterZodiac, e.target.value)} style={{ width: "100%", padding: "6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "white", border: "none", fontSize: "0.85rem" }}>
+                <option value="">Any</option>
+                <option value="Aries">Aries</option>
+                <option value="Taurus">Taurus</option>
+                <option value="Gemini">Gemini</option>
+                <option value="Cancer">Cancer</option>
+                <option value="Leo">Leo</option>
+                <option value="Virgo">Virgo</option>
+                <option value="Libra">Libra</option>
+                <option value="Scorpio">Scorpio</option>
+                <option value="Sagittarius">Sagittarius</option>
+                <option value="Capricorn">Capricorn</option>
+                <option value="Aquarius">Aquarius</option>
+                <option value="Pisces">Pisces</option>
+              </select>
+            </div>
+            <div style={{ flex: 1, minWidth: "120px" }}>
+              <label style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Drinking</label>
+              <select value={filterDrinking} onChange={(e) => handleFilterChange(setFilterDrinking, e.target.value)} style={{ width: "100%", padding: "6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "white", border: "none", fontSize: "0.85rem" }}>
+                <option value="">Any</option>
+                <option value="Yes">Yes</option>
+                <option value="Sometimes">Sometimes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div style={{ flex: 1, minWidth: "120px" }}>
+              <label style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Smoking</label>
+              <select value={filterSmoking} onChange={(e) => handleFilterChange(setFilterSmoking, e.target.value)} style={{ width: "100%", padding: "6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "white", border: "none", fontSize: "0.85rem" }}>
+                <option value="">Any</option>
+                <option value="Yes">Yes</option>
+                <option value="Sometimes">Sometimes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={styles.cardContainer}>
@@ -411,6 +514,16 @@ export default function Discover() {
                       <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       </div>
+                    )}
+                    {currentProfile.isNewHere && (
+                      <span style={{ background: "linear-gradient(45deg, #10b981, #34d399)", color: "white", padding: "2px 6px", borderRadius: "8px", fontSize: "0.65rem", fontWeight: "bold" }}>
+                        🌱 New Here
+                      </span>
+                    )}
+                    {currentProfile.isBoosted && (
+                      <span style={{ background: "linear-gradient(45deg, #a855f7, #ec4899)", color: "white", padding: "2px 6px", borderRadius: "8px", fontSize: "0.65rem", fontWeight: "bold" }}>
+                        ⚡ Boosted
+                      </span>
                     )}
                   </div>
                   <button 
