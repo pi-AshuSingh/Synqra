@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc, serverTimestamp, query, collection, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, query, collection, where, getDocs, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
@@ -82,6 +82,47 @@ export default function Profile() {
           if (data.height || data.zodiac || data.drinking || data.smoking) score += 20;
           if (data.prompt && data.promptAnswer) score += 20;
           setCompletionScore(score);
+        } else {
+          // Document does not exist. Recover the account gracefully.
+          const newData = {
+            name: user.displayName || "New User",
+            username: `user_${Math.floor(Math.random() * 10000)}`,
+            email: user.email || "",
+            gender: "nonbinary",
+            interestedIn: "everyone",
+            age: 25,
+            city: "",
+            lookingFor: "Casual",
+            bio: "",
+            tags: [],
+            image: user.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            images: [user.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+            minAgePref: 18,
+            maxAgePref: 99,
+            createdAt: new Date().toISOString(),
+            premium: false,
+            isAdmin: false
+          };
+          await setDoc(docRef, newData);
+          
+          setProfileData(newData);
+          setBio("");
+          setUsername(newData.username);
+          setCity("");
+          setLookingFor("Casual");
+          setMinAge(18);
+          setMaxAge(99);
+          setImage1(newData.image);
+          setImage2("");
+          setImage3("");
+          setHeight("");
+          setZodiac("");
+          setDrinking("");
+          setSmoking("");
+          setPrompt("");
+          setPromptAnswer("");
+          setIsIncognito(false);
+          setCompletionScore(20);
         }
       } catch (err) {
         console.error("Error fetching profile:", err);

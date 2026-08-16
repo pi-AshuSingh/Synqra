@@ -36,7 +36,35 @@ export default function Login() {
     const provider = new GoogleAuthProvider();
     try {
       await setPersistence(auth, browserLocalPersistence);
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      const { doc, getDoc, setDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          name: userCredential.user.displayName || "New User",
+          username: `user_${Math.floor(Math.random() * 10000)}`,
+          email: userCredential.user.email || "",
+          gender: "nonbinary",
+          interestedIn: "everyone",
+          age: 25,
+          city: "",
+          lookingFor: "Casual",
+          bio: "",
+          tags: [],
+          image: userCredential.user.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          images: [userCredential.user.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+          minAgePref: 18,
+          maxAgePref: 99,
+          createdAt: new Date().toISOString(),
+          premium: false,
+          isAdmin: false
+        });
+      }
+      
       router.push("/discover");
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google.");
