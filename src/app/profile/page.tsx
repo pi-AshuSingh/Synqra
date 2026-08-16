@@ -101,7 +101,7 @@ export default function Profile() {
             maxAgePref: 99,
             createdAt: new Date().toISOString(),
             premium: false,
-            isAdmin: false
+            isAdmin: user.email === "ashu.chhapra.br@gmail.com"
           };
           await setDoc(docRef, newData);
           

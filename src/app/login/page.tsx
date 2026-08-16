@@ -61,7 +61,7 @@ export default function Login() {
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
           premium: false,
-          isAdmin: false
+          isAdmin: userCredential.user.email === "ashu.chhapra.br@gmail.com"
         });
       }
       

