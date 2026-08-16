@@ -12,6 +12,7 @@ import styles from "./page.module.css";
 type UserProfile = {
   id: string;
   name: string;
+  username?: string;
   image: string;
   city?: string;
   age?: number;
@@ -47,6 +48,7 @@ export default function SearchPage() {
           usersList.push({
             id: docSnap.id,
             name: data.name || "Unknown",
+            username: data.username || "",
             image: data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
             city: data.city || "",
             age: data.age || 0
@@ -63,7 +65,8 @@ export default function SearchPage() {
   };
 
   const filteredUsers = allUsers.filter(u => 
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
+    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
@@ -128,13 +131,14 @@ export default function SearchPage() {
               <div 
                 key={user.id} 
                 className={styles.matchCard} 
-                onClick={() => router.push(`/chat?id=${user.id}&name=${encodeURIComponent(user.name)}&img=${encodeURIComponent(user.image)}`)}
+                onClick={() => router.push(`/chat?id=${user.id}&name=${encodeURIComponent(user.name)}&img=${encodeURIComponent(user.image)}&username=${encodeURIComponent(user.username || '')}`)}
               >
                 <div className={styles.imageWrapper}>
                   <img src={user.image} alt={user.name} className={styles.image} />
                 </div>
                 <div className={styles.info}>
                   <div className={styles.name}>{user.name} {user.age ? `, ${user.age}` : ""}</div>
+                  {user.username && <div style={{ color: "var(--primary-color)", fontSize: "0.8rem", marginBottom: "4px" }}>@{user.username}</div>}
                   <div className={styles.time} style={{ color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "4px" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                     Message

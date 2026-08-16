@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, query, collection, where, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
@@ -18,6 +18,7 @@ export default function Profile() {
 
   // Editable fields
   const [bio, setBio] = useState("");
+  const [username, setUsername] = useState("");
   const [city, setCity] = useState("");
   const [lookingFor, setLookingFor] = useState("");
   const [minAge, setMinAge] = useState(18);
@@ -53,6 +54,7 @@ export default function Profile() {
           const data = docSnap.data();
           setProfileData(data);
           setBio(data.bio || "");
+          setUsername(data.username || "");
           setCity(data.city || "");
           setLookingFor(data.lookingFor || "");
           setMinAge(data.minAgePref || 18);
@@ -93,14 +95,29 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!user) return;
+
+    if (username.length < 3 || username.includes(" ")) {
+      return alert("Username must be at least 3 characters and contain no spaces.");
+    }
+
     setSaving(true);
     try {
+      if (username.toLowerCase() !== profileData.username) {
+        const usernameQuery = query(collection(db, "users"), where("username", "==", username.toLowerCase()));
+        const snapshot = await getDocs(usernameQuery);
+        if (!snapshot.empty) {
+          setSaving(false);
+          return alert("This username is already taken. Please choose another one.");
+        }
+      }
+
       const newImages = [image1];
       if (image2) newImages.push(image2);
       if (image3) newImages.push(image3);
 
       await updateDoc(doc(db, "users", user.uid), {
         bio,
+        username: username.toLowerCase(),
         city,
         lookingFor,
         minAgePref: minAge,
@@ -220,7 +237,10 @@ export default function Profile() {
                 </div>
               )}
             </h3>
-            <p style={{ color: "var(--text-muted)", textTransform: "capitalize" }}>{profileData.gender}</p>
+            {profileData.username && (
+              <p style={{ color: "var(--primary-color)", fontWeight: "500", marginTop: "4px" }}>@{profileData.username}</p>
+            )}
+            <p style={{ color: "var(--text-muted)", textTransform: "capitalize", marginTop: "4px" }}>{profileData.gender}</p>
             
             {/* Profile Completion Bar */}
             <div style={{ width: "100%", maxWidth: "300px", margin: "10px auto 0", textAlign: "left" }}>
@@ -279,6 +299,14 @@ export default function Profile() {
           <div className={styles.formGroup}>
             <label>Photo 3</label>
             <input type="url" className={styles.input} value={image3} onChange={e => setImage3(e.target.value)} />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Username</label>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }}>@</span>
+              <input type="text" className={styles.input} style={{ paddingLeft: "30px" }} value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))} />
+            </div>
           </div>
 
           <div className={styles.formGroup}>

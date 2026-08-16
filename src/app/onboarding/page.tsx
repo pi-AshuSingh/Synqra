@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, query, collection, where, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "@/lib/firebase";
 import styles from "./onboarding.module.css";
@@ -33,6 +33,7 @@ export default function Onboarding() {
   
   // Profile state
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [gender, setGender] = useState("");
   const [interestedIn, setInterestedIn] = useState("");
   const [age, setAge] = useState("");
@@ -66,12 +67,30 @@ export default function Onboarding() {
     setError("");
     
     if (step === 1) {
-      if (!name || !gender || !interestedIn || !age || !city || !lookingFor) {
+      if (!name || !username || !gender || !interestedIn || !age || !city || !lookingFor) {
         return setError("Please fill out all fields.");
+      }
+      if (username.length < 3 || username.includes(" ")) {
+        return setError("Username must be at least 3 characters and contain no spaces.");
       }
       if (parseInt(age) < 18) {
         return setError("You must be at least 18 years old.");
       }
+      
+      setLoading(true);
+      try {
+        const usernameQuery = query(collection(db, "users"), where("username", "==", username.toLowerCase()));
+        const snapshot = await getDocs(usernameQuery);
+        if (!snapshot.empty) {
+          setLoading(false);
+          return setError("This username is already taken. Please choose another one.");
+        }
+      } catch (err) {
+        setLoading(false);
+        return setError("Failed to verify username. Try again.");
+      }
+      setLoading(false);
+      
       setStep(2);
     } 
     else if (step === 2) {
@@ -107,6 +126,7 @@ export default function Onboarding() {
         // 3. Save to Firestore
         await setDoc(doc(db, "users", user.uid), {
           name,
+          username: username.toLowerCase(),
           email,
           gender,
           interestedIn,
@@ -155,9 +175,18 @@ export default function Onboarding() {
             <h2 className="text-gradient">The Basics</h2>
             <p className={styles.subtitle}>Who are you and what are you looking for?</p>
             
-            <div className={styles.formGroup}>
-              <label>First Name</label>
-              <input type="text" className={styles.input} placeholder="Aisha" value={name} onChange={e => setName(e.target.value)} />
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <div className={styles.formGroup} style={{ flex: 1 }}>
+                <label>First Name</label>
+                <input type="text" className={styles.input} placeholder="Aisha" value={name} onChange={e => setName(e.target.value)} />
+              </div>
+              <div className={styles.formGroup} style={{ flex: 1 }}>
+                <label>Username</label>
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }}>@</span>
+                  <input type="text" className={styles.input} style={{ paddingLeft: "30px" }} placeholder="aisha123" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))} />
+                </div>
+              </div>
             </div>
             
             <div style={{ display: "flex", gap: "1rem" }}>

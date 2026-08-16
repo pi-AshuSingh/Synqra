@@ -23,6 +23,7 @@ function ChatContent() {
   const targetId = searchParams.get("id") as string;
   const targetName = searchParams.get("name") || "Match";
   const targetImg = searchParams.get("img") || "";
+  const targetUsername = searchParams.get("username") || "";
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -205,12 +206,17 @@ function ChatContent() {
               <div style={{ position: "absolute", bottom: "0", right: "0", background: "#22c55e", width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--glass-bg)" }}></div>
             )}
           </div>
-          <div className={styles.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            {targetName}
-            {targetVerified && (
-              <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
+          <div className={styles.name} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {targetName}
+              {targetVerified && (
+                <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              )}
+            </div>
+            {targetUsername && (
+              <span style={{ fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: "normal" }}>@{targetUsername}</span>
             )}
           </div>
         </div>
