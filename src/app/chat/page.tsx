@@ -106,9 +106,13 @@ function ChatContent() {
     fetchTarget();
   }, [targetId]);
 
+  const hasTargetReplied = messages.some(m => m.senderId === targetId);
+  const myMessagesCount = messages.filter(m => m.senderId === currentUser?.uid).length;
+  const isBlocked = !hasTargetReplied && myMessagesCount >= 5;
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() || !currentUser) return;
+    if (!inputText.trim() || !currentUser || isBlocked) return;
 
     const textToSend = inputText.trim();
     setInputText("");
@@ -252,25 +256,33 @@ function ChatContent() {
       </div>
 
       <form className={styles.inputArea} onSubmit={sendMessage}>
-        <button 
-          type="button" 
-          className={styles.icebreakerBtn}
-          onClick={generateIcebreaker}
-          disabled={isGenerating}
-          title="AI Icebreaker"
-        >
-          {isGenerating ? "..." : "🪄"}
-        </button>
-        <input 
-          type="text" 
-          className={styles.input} 
-          placeholder="Say something nice..." 
-          value={inputText}
-          onChange={handleInputChange}
-        />
-        <button type="submit" className={styles.sendBtn} disabled={!inputText.trim()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
+        {isBlocked ? (
+          <div style={{ width: "100%", padding: "10px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+            You've reached the 5-message limit. Wait for {targetName} to reply!
+          </div>
+        ) : (
+          <>
+            <button 
+              type="button" 
+              className={styles.icebreakerBtn}
+              onClick={generateIcebreaker}
+              disabled={isGenerating}
+              title="AI Icebreaker"
+            >
+              {isGenerating ? "..." : "🪄"}
+            </button>
+            <input 
+              type="text" 
+              className={styles.input} 
+              placeholder="Say something nice..." 
+              value={inputText}
+              onChange={handleInputChange}
+            />
+            <button type="submit" className={styles.sendBtn} disabled={!inputText.trim()}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </>
+        )}
       </form>
     </main>
   );

@@ -481,7 +481,10 @@ export default function Discover() {
     <main className={styles.container}>
       <header className={styles.header}>
         <Logo size={28} />
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Search 🔍
+          </Link>
           <Link href={isGuest ? "/login" : "/sparks"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Sparks ✨
           </Link>

@@ -192,7 +192,10 @@ export default function Profile() {
           <Logo size={32} />
           <h2 className="text-gradient" style={{ margin: 0 }}>My Profile</h2>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
+            Search 🔍
+          </Link>
           <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
             Sparks ✨
           </Link>
