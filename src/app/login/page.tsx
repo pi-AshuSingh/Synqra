@@ -13,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loginRole, setLoginRole] = useState<"user" | "admin">("user");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,8 +24,23 @@ export default function Login() {
     
     try {
       await setPersistence(auth, browserLocalPersistence);
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/discover");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      const { doc, getDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      
+      if (loginRole === "admin") {
+        if ((userDoc.exists() && userDoc.data().isAdmin === true) || userCredential.user.email === "ashu.chhapra.br@gmail.com") {
+          router.push("/admin");
+        } else {
+          await auth.signOut();
+          setError("Access Denied: You do not have Admin privileges.");
+        }
+      } else {
+        router.push("/discover");
+      }
+      
     } catch (err: any) {
       setError(err.message || "Failed to sign in. Check your credentials.");
     } finally {
@@ -65,7 +81,17 @@ export default function Login() {
         });
       }
       
-      router.push("/discover");
+      if (loginRole === "admin") {
+        if (userCredential.user.email === "ashu.chhapra.br@gmail.com" || (userDoc.exists() && userDoc.data()?.isAdmin === true)) {
+          router.push("/admin");
+        } else {
+          await auth.signOut();
+          setError("Access Denied: You do not have Admin privileges.");
+        }
+      } else {
+        router.push("/discover");
+      }
+      
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google.");
     }
@@ -80,6 +106,23 @@ export default function Login() {
         </div>
         
         {error && <div style={{ color: "red", fontSize: "0.875rem", marginBottom: "1rem", textAlign: "center" }}>{error}</div>}
+        
+        <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: "8px", padding: "4px", marginBottom: "1.5rem" }}>
+          <button 
+            type="button"
+            onClick={() => setLoginRole("user")}
+            style={{ flex: 1, padding: "8px", background: loginRole === "user" ? "var(--primary-color)" : "transparent", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: loginRole === "user" ? "bold" : "normal", transition: "all 0.2s" }}
+          >
+            User
+          </button>
+          <button 
+            type="button"
+            onClick={() => setLoginRole("admin")}
+            style={{ flex: 1, padding: "8px", background: loginRole === "admin" ? "var(--primary-color)" : "transparent", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: loginRole === "admin" ? "bold" : "normal", transition: "all 0.2s" }}
+          >
+            Admin
+          </button>
+        </div>
         
         <form className={styles.form} onSubmit={handleLogin}>
           <div className={styles.inputGroup}>
