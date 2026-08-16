@@ -35,56 +35,60 @@ type Profile = {
 // Fallback mock profiles in case Firestore is empty or not configured yet
 const MOCK_PROFILES: Profile[] = [
   {
-    id: "mock1",
-    name: "Aisha",
-    age: 26,
-    city: "Bangalore",
-    lookingFor: "Serious Relationship",
-    bio: "UX Designer in Bangalore. Love masala chai, indie music, and weekend road trips.",
-    tags: ["Creative", "Spontaneous", "Chill"],
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    images: ["https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-    distance: "5 km away",
-    matchScore: 92
-  },
-  {
-    id: "mock2",
-    name: "Riya",
-    age: 26,
-    city: "Delhi",
-    lookingFor: "Something Casual",
-    bio: "Techie by day, amateur photographer by night. Looking for someone to explore Delhi cafes with.",
-    tags: ["Adventurous", "Analytical", "Outgoing"],
-    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    images: ["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-    distance: "12 km away",
-    matchScore: 88
-  },
-  {
-    id: "mock3",
+    id: "mock_priya_styles",
     name: "Priya",
     age: 24,
     city: "Mumbai",
     lookingFor: "Serious Relationship",
-    bio: "Always up for a beach walk or a coffee date. Passionate about sustainability and mindful living.",
-    tags: ["Nature Lover", "Coffee Addict", "Fitness"],
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    images: ["https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
-    distance: "2 km away",
-    matchScore: 95
+    bio: "Fashion designer, dog mom. Love masala chai and weekend road trips.",
+    tags: ["Creative", "Fashion", "Chill"],
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "5 km away",
+    matchScore: 92,
+    verificationStatus: "verified"
   },
   {
-    id: "mock4",
-    name: "Neha",
-    age: 27,
-    city: "Pune",
+    id: "mock_rahul_007",
+    name: "Rahul",
+    age: 26,
+    city: "Mumbai",
+    lookingFor: "Something Casual",
+    bio: "Techie by day, amateur photographer by night. Looking for someone to explore cafes with.",
+    tags: ["Photography", "Tech", "Coffee"],
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "12 km away",
+    matchScore: 88,
+    verificationStatus: "verified"
+  },
+  {
+    id: "mock_ananya_ca",
+    name: "Ananya",
+    age: 26,
+    city: "Delhi",
+    lookingFor: "Serious Relationship",
+    bio: "CA looking for someone to balance my sheets. Always up for a coffee date.",
+    tags: ["Finance", "Coffee", "Fitness"],
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    distance: "2 km away",
+    matchScore: 95,
+    verificationStatus: "verified"
+  },
+  {
+    id: "mock_aarav_tech",
+    name: "Aarav",
+    age: 28,
+    city: "Delhi",
     lookingFor: "Marriage",
-    bio: "Software engineer who loves baking on weekends. Let's debate which pizza topping is best.",
+    bio: "Tech enthusiast and foodie. Let's debate which pizza topping is best.",
     tags: ["Foodie", "Tech", "Introvert"],
-    image: "https://images.unsplash.com/photo-1599839619722-39751411ea63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    images: ["https://images.unsplash.com/photo-1599839619722-39751411ea63?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: ["https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
     distance: "8 km away",
-    matchScore: 80
+    matchScore: 80,
+    verificationStatus: "verified"
   }
 ];
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, doc, getDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import styles from "./page.module.css";
@@ -120,6 +120,59 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSeedUsers = async () => {
+    if (!window.confirm("This will create 20 mock Indian profiles. Continue?")) return;
+    
+    setLoading(true);
+    const mockUsers = [
+      { name: "Rahul", username: "rahul_007", gender: "man", age: 26, city: "Mumbai", bio: "Love coffee and long drives.", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" },
+      { name: "Aarav", username: "aarav_tech", gender: "man", age: 28, city: "Delhi", bio: "Tech enthusiast and foodie.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" },
+      { name: "Vihaan", username: "vihaan_fit", gender: "man", age: 24, city: "Bangalore", bio: "Fitness freak, always at the gym.", image: "https://images.unsplash.com/photo-1488161628813-04466f872507?auto=format&fit=crop&w=400&q=80" },
+      { name: "Arjun", username: "arjun_music", gender: "man", age: 27, city: "Pune", bio: "Musician looking for my muse.", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80" },
+      { name: "Sai", username: "sai_founder", gender: "man", age: 25, city: "Hyderabad", bio: "Startup founder, hustling 24/7.", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80" },
+      { name: "Rohan", username: "rohan_clicks", gender: "man", age: 29, city: "Chennai", bio: "Traveler and photographer.", image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80" },
+      { name: "Krishna", username: "krishna_98", gender: "man", age: 26, city: "Jaipur", bio: "Simple guy, looking for something real.", image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80" },
+      { name: "Aditya", username: "aditya_finance", gender: "man", age: 28, city: "Ahmedabad", bio: "Finance bro by day, gamer by night.", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80" },
+      { name: "Kabir", username: "kabir_reads", gender: "man", age: 27, city: "Kolkata", bio: "Bookworm and art lover.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80" },
+      { name: "Dev", username: "dev_cars", gender: "man", age: 25, city: "Chandigarh", bio: "Car enthusiast.", image: "https://images.unsplash.com/photo-1488161628813-04466f872507?auto=format&fit=crop&w=400&q=80" },
+      
+      { name: "Priya", username: "priya_styles", gender: "woman", age: 24, city: "Mumbai", bio: "Fashion designer, dog mom.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
+      { name: "Ananya", username: "ananya_ca", gender: "woman", age: 26, city: "Delhi", bio: "CA looking for someone to balance my sheets.", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80" },
+      { name: "Diya", username: "diya_codes", gender: "woman", age: 23, city: "Bangalore", bio: "Software engineer, weekend hiker.", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" },
+      { name: "Riya", username: "riya_matcha", gender: "woman", age: 25, city: "Pune", bio: "Cafe hopper and matcha lover.", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80" },
+      { name: "Sneha", username: "sneha_hr", gender: "woman", age: 27, city: "Hyderabad", bio: "HR by profession, therapist for friends.", image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80" },
+      { name: "Neha", username: "neha_dance", gender: "woman", age: 28, city: "Chennai", bio: "Classical dancer and foodie.", image: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=400&q=80" },
+      { name: "Kriti", username: "kriti_arch", gender: "woman", age: 24, city: "Jaipur", bio: "Architect, obsessed with old buildings.", image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=400&q=80" },
+      { name: "Shreya", username: "shreya_mktg", gender: "woman", age: 26, city: "Ahmedabad", bio: "Marketing guru.", image: "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?auto=format&fit=crop&w=400&q=80" },
+      { name: "Pooja", username: "pooja_sings", gender: "woman", age: 25, city: "Kolkata", bio: "Singer and songwriter.", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" },
+      { name: "Tanya", username: "tanya_fit", gender: "woman", age: 27, city: "Chandigarh", bio: "Gym rat and nutritionist.", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80" }
+    ];
+
+    try {
+      for (const u of mockUsers) {
+        const fakeId = `mock_${u.username}`;
+        await setDoc(doc(db, "users", fakeId), {
+          ...u,
+          email: `${u.username}@mock.synqra.com`,
+          interestedIn: "everyone",
+          lookingFor: "Serious Relationship",
+          tags: ["Chill", "Empathetic"],
+          minAgePref: 18,
+          maxAgePref: 99,
+          createdAt: new Date().toISOString(),
+          premium: false,
+          isAdmin: false,
+          verificationStatus: "verified" // Verified so they look legit
+        });
+      }
+      alert("Successfully seeded 20 mock users!");
+      fetchUsers();
+    } catch (err: any) {
+      alert("Failed to seed users: " + err.message);
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex-center" style={{ minHeight: "100vh" }}>
@@ -161,10 +214,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <h3>User Management</h3>
-        <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
-          Manage all registered users on the platform.
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <div>
+            <h3>User Management</h3>
+            <p style={{ color: "var(--text-muted)" }}>Manage all registered users on the platform.</p>
+          </div>
+          <button onClick={handleSeedUsers} className="btn-primary" style={{ fontSize: "0.8rem", padding: "8px 16px" }}>
+            + Seed 20 Mock Users
+          </button>
+        </div>
 
         <div className={styles.usersTableContainer}>
           <table className={styles.usersTable}>
