@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, doc, setDoc, query } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, query, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
@@ -30,6 +30,8 @@ type Profile = {
   promptAnswer?: string;
   isBoosted?: boolean;
   isNewHere?: boolean;
+  matchReasons?: { label: string, points: number, icon: string }[];
+  isTopPick?: boolean;
 };
 
 // Fallback mock profiles in case Firestore is empty or not configured yet
@@ -113,6 +115,8 @@ export default function Discover() {
   const [filterDrinking, setFilterDrinking] = useState("");
   const [filterSmoking, setFilterSmoking] = useState("");
 
+  const [showMatchModal, setShowMatchModal] = useState<Profile | null>(null);
+
   // Reset indices when search or filters change
   useEffect(() => {
     setCurrentIndex(0);
@@ -150,8 +154,11 @@ export default function Discover() {
       
       // Auto-recover Admin for the creator
       if (currentUserData?.email === "ashu.chhapra.br@gmail.com" && currentUserData?.isAdmin !== true) {
-        await updateDoc(userRef, { isAdmin: true });
+        await updateDoc(userRef, { isAdmin: true, lastActive: serverTimestamp() });
         if (currentUserData) currentUserData.isAdmin = true;
+      } else {
+        // Just update last active
+        await updateDoc(userRef, { lastActive: serverTimestamp() });
       }
       
       const interestedIn = currentUserData?.interestedIn || "everyone";
@@ -205,18 +212,26 @@ export default function Discover() {
 
         // Calculate Compatibility Score
         let score = 50; // Base score
+        const reasons: { label: string, points: number, icon: string }[] = [];
+        
+        reasons.push({ label: "Base Compatibility", points: 50, icon: "🔥" });
+
         const targetTags = data.tags || [];
         const myTags = currentUserData?.tags || [];
         
         // +10 for each overlapping tag
         const overlappingTags = targetTags.filter((t: string) => myTags.includes(t));
-        score += (overlappingTags.length * 10);
+        if (overlappingTags.length > 0) {
+          const points = overlappingTags.length * 10;
+          score += points;
+          reasons.push({ label: `Shared Interests (${overlappingTags.join(', ')})`, points, icon: "🧩" });
+        }
 
         // Age proximity (closer is better, max +20)
         const ageDiff = Math.abs((currentUserData?.age || 25) - userAge);
-        if (ageDiff <= 2) score += 20;
-        else if (ageDiff <= 5) score += 10;
-        else if (ageDiff <= 10) score += 5;
+        if (ageDiff <= 2) { score += 20; reasons.push({ label: "Age Proximity (Within 2 years)", points: 20, icon: "🕰️" }); }
+        else if (ageDiff <= 5) { score += 10; reasons.push({ label: "Age Proximity (Within 5 years)", points: 10, icon: "🕰️" }); }
+        else if (ageDiff <= 10) { score += 5; reasons.push({ label: "Age Proximity (Within 10 years)", points: 5, icon: "🕰️" }); }
 
         // Cap at 99
         if (score > 99) score = 99;
@@ -258,13 +273,26 @@ export default function Discover() {
           prompt: data.prompt || "",
           promptAnswer: data.promptAnswer || "",
           matchScore: score,
+          matchReasons: reasons,
           isBoosted,
           isNewHere
         });
       });
       
-      // Shuffle profiles for randomness, but put boosted profiles first
+      // Identify Top 3 Picks based on matchScore
+      const sortedByScore = [...fetchedProfiles].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      const top3Ids = new Set(sortedByScore.slice(0, 3).map(p => p.id));
+      
+      fetchedProfiles.forEach(p => {
+        if (top3Ids.has(p.id)) {
+          p.isTopPick = true;
+        }
+      });
+      
+      // Shuffle profiles for randomness, but put Top Picks and Boosted profiles first
       const shuffled = fetchedProfiles.sort((a, b) => {
+        if (a.isTopPick && !b.isTopPick) return -1;
+        if (!a.isTopPick && b.isTopPick) return 1;
         if (a.isBoosted && !b.isBoosted) return -1;
         if (!a.isBoosted && b.isBoosted) return 1;
         return 0.5 - Math.random();
@@ -625,6 +653,11 @@ export default function Discover() {
                         ⚡ Boosted
                       </span>
                     )}
+                    {currentProfile.isTopPick && (
+                      <span style={{ background: "linear-gradient(45deg, #fbbf24, #d97706)", color: "white", padding: "2px 6px", borderRadius: "8px", fontSize: "0.65rem", fontWeight: "bold" }}>
+                        ⭐ Top Pick
+                      </span>
+                    )}
                   </div>
                   <button 
                     onClick={(e) => { e.stopPropagation(); handleBlock(); }}
@@ -684,8 +717,11 @@ export default function Discover() {
                 {/* Advanced Badges */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "12px" }}>
                   {currentProfile.matchScore && (
-                    <span style={{ background: "rgba(34, 197, 94, 0.2)", border: "1px solid #22c55e", color: "#22c55e", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 700 }}>
-                      {currentProfile.matchScore}% Match
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); setShowMatchModal(currentProfile); }}
+                      style={{ cursor: "pointer", background: "rgba(34, 197, 94, 0.2)", border: "1px solid #22c55e", color: "#22c55e", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 700 }}
+                    >
+                      {currentProfile.matchScore}% Match ℹ️
                     </span>
                   )}
                   {currentProfile.height && (
@@ -762,6 +798,36 @@ export default function Discover() {
           <button className={`${styles.actionBtn} ${styles.sparkBtn}`} onClick={() => handleAction("like")}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           </button>
+        </div>
+      )}
+      
+      {showMatchModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={() => setShowMatchModal(null)}>
+          <div style={{ background: "var(--glass-bg)", border: "1px solid var(--glass-border)", borderRadius: "16px", padding: "24px", maxWidth: "400px", width: "100%", color: "white" }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#22c55e" }}>{showMatchModal.matchScore}% Match</span> with {showMatchModal.name}
+            </h3>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {showMatchModal.matchReasons?.map((reason, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.05)", padding: "10px 12px", borderRadius: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>{reason.icon}</span>
+                    <span style={{ fontSize: "0.9rem" }}>{reason.label}</span>
+                  </div>
+                  <span style={{ color: "#22c55e", fontWeight: "bold" }}>+{reason.points}</span>
+                </div>
+              ))}
+            </div>
+            
+            <button 
+              className="btn-primary" 
+              onClick={() => setShowMatchModal(null)} 
+              style={{ width: "100%", marginTop: "20px" }}
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </main>

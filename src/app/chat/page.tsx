@@ -105,7 +105,18 @@ function ChatContent() {
       }
     };
     fetchTarget();
-  }, [targetId]);
+    
+    // Update my lastActive
+    if (currentUser) {
+      const updateMyActive = async () => {
+        const { updateDoc } = await import("firebase/firestore");
+        try {
+          await updateDoc(doc(db, "users", currentUser.uid), { lastActive: serverTimestamp() });
+        } catch (e) {}
+      };
+      updateMyActive();
+    }
+  }, [targetId, currentUser]);
 
   const hasTargetReplied = messages.some(m => m.senderId === targetId);
   const myMessagesCount = messages.filter(m => m.senderId === currentUser?.uid).length;
