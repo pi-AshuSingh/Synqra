@@ -60,17 +60,7 @@ export default function Premium() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <Logo size={28} />
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Discover
-          </Link>
-          <Link href="/profile" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Profile
-          </Link>
-        </div>
-      </header>
+      
 
       <div className={styles.content}>
         <h1 className={styles.title}>Synqra Premium</h1>

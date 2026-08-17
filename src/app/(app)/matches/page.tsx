@@ -7,6 +7,7 @@ import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 import styles from "./page.module.css";
 
 type Match = {
@@ -84,26 +85,7 @@ export default function Matches() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <Logo size={32} />
-          <h2 className="text-gradient" style={{ margin: 0 }}>Matches</h2>
-        </div>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Search 🔍
-          </Link>
-          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Sparks ✨
-          </Link>
-          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Discover
-          </Link>
-          <Link href="/profile" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Profile
-          </Link>
-        </div>
-      </header>
+      
 
       <div style={{ padding: "0 20px 20px 20px" }}>
         <input 

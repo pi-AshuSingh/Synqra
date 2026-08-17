@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { collection, getDocs, doc, setDoc, query, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 import styles from "./discover.module.css";
 
 type Profile = {
@@ -23,8 +24,11 @@ type Profile = {
   distance?: string;
   height?: string;
   zodiac?: string;
+  mbti?: string;
+  currentVibe?: string;
   drinking?: string;
   smoking?: string;
+  spotifyAnthem?: string;
   matchScore?: number;
   prompt?: string;
   promptAnswer?: string;
@@ -116,6 +120,21 @@ export default function Discover() {
   const [filterSmoking, setFilterSmoking] = useState("");
 
   const [showMatchModal, setShowMatchModal] = useState<Profile | null>(null);
+  const [showSuperLikeModal, setShowSuperLikeModal] = useState(false);
+  const [superLikeNote, setSuperLikeNote] = useState("");
+
+  const filteredProfiles = useMemo(() => {
+    return profiles.filter(p => {
+      if (blockedIds.has(p.id)) return false;
+      if (searchCity && !p.city?.toLowerCase().includes(searchCity.toLowerCase())) return false;
+      if (filterZodiac && p.zodiac !== filterZodiac) return false;
+      if (filterDrinking && p.drinking !== filterDrinking) return false;
+      if (filterSmoking && p.smoking !== filterSmoking) return false;
+      return true;
+    });
+  }, [profiles, blockedIds, searchCity, filterZodiac, filterDrinking, filterSmoking]);
+
+  const currentProfile = useMemo(() => currentIndex >= 0 && currentIndex < filteredProfiles.length ? filteredProfiles[currentIndex] : null, [currentIndex, filteredProfiles]);
 
   // Reset indices when search or filters change
   useEffect(() => {
@@ -127,6 +146,36 @@ export default function Discover() {
   useEffect(() => {
     setCurrentPhotoIndex(0);
   }, [currentIndex]);
+
+  // Track profile views (Feature: Who Viewed My Profile)
+  useEffect(() => {
+    if (!currentProfile || isGuest || !currentUser) return;
+    
+    const timer = setTimeout(async () => {
+      try {
+        const { setDoc, doc: fsDoc } = await import("firebase/firestore");
+        await setDoc(fsDoc(db, "users", currentProfile.id, "profileViews", currentUser.uid), {
+          sourceId: currentUser.uid,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Push notification for view
+        await setDoc(fsDoc(db, "users", currentProfile.id, "notifications", `view_${currentUser.uid}`), {
+          type: "view",
+          sourceId: currentUser.uid,
+          sourceImage: currentUser.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          title: "New Visitor",
+          body: "Someone viewed your profile!",
+          timestamp: new Date().toISOString(),
+          read: false
+        });
+      } catch (err) {
+        console.error("Failed to register profile view", err);
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [currentProfile?.id, currentUser, isGuest]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -165,6 +214,11 @@ export default function Discover() {
       const minAgePref = currentUserData?.minAgePref || 18;
       const maxAgePref = currentUserData?.maxAgePref || 99;
       const userBlockedList = currentUserData?.blockedUsers || [];
+      
+      if (currentUserData?.isPremium && currentUserData?.travelCity && !searchCity) {
+        setSearchCity(currentUserData.travelCity);
+      }
+
       setBlockedIds(new Set(userBlockedList));
       if (currentUserData?.isPremium) {
         setIsPremium(true);
@@ -266,10 +320,13 @@ export default function Discover() {
           images: data.images || [data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
           verificationStatus: data.verificationStatus || "none",
           distance: "Nearby",
-          height: data.height || "",
-          zodiac: data.zodiac || "",
+          height: data.height,
+          zodiac: data.zodiac,
+          mbti: data.mbti,
+          currentVibe: data.currentVibe,
           drinking: data.drinking || "",
           smoking: data.smoking || "",
+          spotifyAnthem: data.spotifyAnthem || "",
           prompt: data.prompt || "",
           promptAnswer: data.promptAnswer || "",
           matchScore: score,
@@ -334,9 +391,21 @@ export default function Discover() {
     }
 
     if (type === "super_like" && !isGuest) {
-      setSuperLikesUsed(prev => prev + 1);
+      setShowSuperLikeModal(true);
+      return;
     }
-    
+
+    await executeAction(type);
+  };
+
+  const submitSuperLike = async () => {
+    setShowSuperLikeModal(false);
+    setSuperLikesUsed(prev => prev + 1);
+    await executeAction("super_like", superLikeNote);
+    setSuperLikeNote("");
+  };
+
+  const executeAction = async (type: "pass" | "like" | "super_like", note?: string) => {
     const targetProfile = profiles[currentIndex];
     
     // Save to Firestore if authenticated
@@ -347,15 +416,27 @@ export default function Discover() {
           targetId: targetProfile.id,
           targetName: targetProfile.name,
           targetImage: targetProfile.image,
+          note: note || "",
           timestamp: new Date().toISOString()
         });
 
-        // If it's a 'like' or 'super_like', also double-write to the target user's receivedLikes
         if (type === "like" || type === "super_like") {
           await setDoc(doc(db, "users", targetProfile.id, "receivedLikes", currentUser.uid), {
             sourceId: currentUser.uid,
             type: type,
+            note: note || "",
             timestamp: new Date().toISOString()
+          });
+
+          // Push notification for like/super_like
+          await setDoc(doc(db, "users", targetProfile.id, "notifications", `like_${currentUser.uid}`), {
+            type: type,
+            sourceId: currentUser.uid,
+            sourceImage: currentUser.photoURL || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            title: type === "super_like" ? "Super Like!" : "New Like!",
+            body: type === "super_like" ? (note ? `They said: "${note}"` : "Someone Super Liked you!") : "Someone liked you!",
+            timestamp: new Date().toISOString(),
+            read: false
           });
         }
       } catch (err) {
@@ -495,15 +576,7 @@ export default function Discover() {
     setter(value);
   };
 
-  const filteredProfiles = profiles.filter(p => {
-    if (searchCity && !p.city?.toLowerCase().includes(searchCity.toLowerCase())) return false;
-    if (filterZodiac && p.zodiac !== filterZodiac) return false;
-    if (filterDrinking && p.drinking !== filterDrinking) return false;
-    if (filterSmoking && p.smoking !== filterSmoking) return false;
-    return true;
-  });
-  
-  const currentProfile = currentIndex >= 0 && currentIndex < filteredProfiles.length ? filteredProfiles[currentIndex] : null;
+
 
   if (loading) {
     return (
@@ -518,23 +591,7 @@ export default function Discover() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <Logo size={28} />
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Search 🔍
-          </Link>
-          <Link href={isGuest ? "/login" : "/sparks"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Sparks ✨
-          </Link>
-          <Link href={isGuest ? "/login" : "/matches"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Matches
-          </Link>
-          <Link href={isGuest ? "/login" : "/profile"} className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Profile
-          </Link>
-        </div>
-      </header>
+
 
       <div style={{ padding: "10px 20px" }}>
         <div style={{ display: "flex", gap: "10px" }}>
@@ -618,7 +675,7 @@ export default function Discover() {
             {/* Photo Indicators */}
             {currentProfile.images && currentProfile.images.length > 1 && (
               <div style={{ position: "absolute", top: "10px", left: 0, right: 0, display: "flex", gap: "4px", padding: "0 10px", zIndex: 2 }}>
-                {currentProfile.images.map((_, i) => (
+                {currentProfile.images.map((_: string, i: number) => (
                   <div 
                     key={i} 
                     style={{ 
@@ -666,8 +723,20 @@ export default function Discover() {
                     Block
                   </button>
                 </div>
+                {currentProfile.currentVibe && (
+                  <div style={{ position: "absolute", top: "-20px", left: "0", background: "rgba(255,255,255,0.9)", color: "#1f2937", padding: "4px 12px", borderRadius: "12px", fontSize: "0.8rem", fontWeight: "bold", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", zIndex: 10 }}>
+                    {currentProfile.currentVibe}
+                  </div>
+                )}
+                
                 {currentProfile.city && <div className={styles.distance} style={{ marginBottom: "8px" }}>{currentProfile.city}</div>}
                 
+                {currentProfile.spotifyAnthem && (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1DB95420", color: "#1DB954", padding: "4px 10px", borderRadius: "12px", fontSize: "0.8rem", fontWeight: "600", marginBottom: "8px" }}>
+                    <span>🎵</span> My Anthem: {currentProfile.spotifyAnthem}
+                  </div>
+                )}
+
                 {currentProfile.lookingFor && (
                   <div style={{ marginBottom: "8px" }}>
                     <span style={{ 
@@ -685,21 +754,30 @@ export default function Discover() {
                 <p className={styles.bio}>{currentProfile.bio}</p>
                 
                 <div className={styles.tags}>
-                  {currentProfile.tags.map(tag => (
+                  {currentProfile.tags.map((tag: string) => (
                     <span key={tag} className={styles.tag}>{tag}</span>
                   ))}
                 </div>
 
                 {currentProfile.prompt && currentProfile.promptAnswer && (
-                  <div style={{ marginTop: "12px", background: "rgba(255,255,255,0.05)", padding: "12px", borderRadius: "12px", border: "1px solid var(--glass-border)" }}>
-                    <div style={{ fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: "600", marginBottom: "4px" }}>
-                      {currentProfile.prompt}
-                    </div>
-                    <div style={{ fontSize: "0.95rem", fontStyle: "italic" }}>
-                      "{currentProfile.promptAnswer}"
-                    </div>
+                <div 
+                  className={styles.promptCard} 
+                  style={{ marginTop: "1rem", cursor: "pointer", transition: "transform 0.2s" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSuperLikeNote(`Re: ${currentProfile.promptAnswer}`);
+                    setShowSuperLikeModal(true);
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.02)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                >
+                  <div className={styles.promptQuestion} style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>{currentProfile.prompt}</span>
+                    <span style={{ fontSize: "0.8rem", color: "#3b82f6", background: "rgba(59, 130, 246, 0.2)", padding: "2px 8px", borderRadius: "12px" }}>Reply ✨</span>
                   </div>
-                )}
+                  <div className={styles.promptAnswer}>{currentProfile.promptAnswer}</div>
+                </div>
+              )}
 
                 {/* Audio Prompt Player */}
                 <div style={{ marginTop: "12px", background: "rgba(255,255,255,0.1)", padding: "8px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "10px", width: "fit-content" }}>
@@ -732,6 +810,11 @@ export default function Discover() {
                   {currentProfile.zodiac && (
                     <span style={{ background: "rgba(255,255,255,0.1)", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
                       ✨ {currentProfile.zodiac}
+                    </span>
+                  )}
+                  {currentProfile.mbti && (
+                    <span style={{ background: "linear-gradient(45deg, #3b82f6, #a855f7)", color: "white", padding: "4px 8px", borderRadius: "8px", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px", fontWeight: "bold" }}>
+                      🧠 {currentProfile.mbti}
                     </span>
                   )}
                   {currentProfile.drinking && (
@@ -827,6 +910,39 @@ export default function Discover() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+      {/* Super Like Modal */}
+      {showSuperLikeModal && currentProfile && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+          <div className="glass-card" style={{ maxWidth: "400px", width: "100%", padding: "24px", position: "relative" }}>
+            <h3 style={{ color: "#3b82f6", display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              Super Like {currentProfile.name}
+            </h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "16px" }}>
+              Stand out by attaching a message to your Super Like!
+            </p>
+            <textarea 
+              value={superLikeNote}
+              onChange={(e) => setSuperLikeNote(e.target.value)}
+              placeholder="e.g., I love your dog! What breed is it?"
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--glass-bg)", color: "white", minHeight: "100px", marginBottom: "16px" }}
+              maxLength={150}
+            />
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button className="btn-glass" onClick={() => { setShowSuperLikeModal(false); setSuperLikeNote(""); }}>
+                Cancel
+              </button>
+              <button 
+                className="btn-primary" 
+                onClick={submitSuperLike}
+                style={{ background: "linear-gradient(45deg, #3b82f6, #2563eb)" }}
+              >
+                Send Super Like
+              </button>
+            </div>
           </div>
         </div>
       )}

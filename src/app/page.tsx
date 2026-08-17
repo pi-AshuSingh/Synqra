@@ -27,6 +27,7 @@ export default function Home() {
           <a href="#about" className={styles.navLink}>About us</a>
           <a href="#help" className={styles.navLink}>Help</a>
           <Link href="/login" className={styles.loginBtn}>Login ⌵</Link>
+          <Link href="/login" className={styles.joinBtn}>Join Now</Link>
         </div>
       </nav>
 
@@ -88,6 +89,23 @@ export default function Home() {
         </div>
       </section>
 
+      <div className={styles.statsSection}>
+        <div className={styles.statBox}>
+          <div className={styles.statNumber}>10,000+</div>
+          <div className={styles.statLabel}>Active Users</div>
+        </div>
+        <div className={styles.statDivider}></div>
+        <div className={styles.statBox}>
+          <div className={styles.statNumber}>500k+</div>
+          <div className={styles.statLabel}>Connections</div>
+        </div>
+        <div className={styles.statDivider}></div>
+        <div className={styles.statBox}>
+          <div className={styles.statNumber}>2M+</div>
+          <div className={styles.statLabel}>Messages</div>
+        </div>
+      </div>
+
       <div className={styles.trustBanner}>
         <div className={styles.trustItem}>
           Exclusive Matchmaking Experience
@@ -124,6 +142,77 @@ export default function Home() {
         </div>
       </section>
 
+      <section className={styles.howItWorksSection}>
+        <h2 className={styles.sectionTitle}>How It Works</h2>
+        <div className={styles.stepsGrid}>
+          <div className={styles.stepCard}>
+            <div className={styles.stepNumber}>1</div>
+            <div className={styles.stepIcon}>✍️</div>
+            <h3>Create Profile</h3>
+            <p>Tell us about your authentic self, your interests, and what you are truly looking for.</p>
+          </div>
+          <div className={styles.stepCard}>
+            <div className={styles.stepNumber}>2</div>
+            <div className={styles.stepIcon}>✨</div>
+            <h3>Find Sparks</h3>
+            <p>Connect with verified individuals based on shared intentions and deep compatibility.</p>
+          </div>
+          <div className={styles.stepCard}>
+            <div className={styles.stepNumber}>3</div>
+            <div className={styles.stepIcon}>🥂</div>
+            <h3>Meet Up</h3>
+            <p>Take the conversation offline and build a meaningful relationship safely.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.marqueeSection}>
+        <div className={styles.marqueeContainer}>
+          <div className={styles.marqueeContent}>
+            <span className={styles.badge}>☕ Coffee Lover</span>
+            <span className={styles.badge}>✈️ World Traveler</span>
+            <span className={styles.badge}>🎨 Art Enthusiast</span>
+            <span className={styles.badge}>🎸 Live Music</span>
+            <span className={styles.badge}>🐕 Dog Parent</span>
+            <span className={styles.badge}>🧘‍♀️ Mindfulness</span>
+            <span className={styles.badge}>🧗‍♂️ Bouldering</span>
+            <span className={styles.badge}>🍷 Wine Tasting</span>
+            {/* DUPLICATE FOR INFINITE EFFECT */}
+            <span className={styles.badge}>☕ Coffee Lover</span>
+            <span className={styles.badge}>✈️ World Traveler</span>
+            <span className={styles.badge}>🎨 Art Enthusiast</span>
+            <span className={styles.badge}>🎸 Live Music</span>
+            <span className={styles.badge}>🐕 Dog Parent</span>
+            <span className={styles.badge}>🧘‍♀️ Mindfulness</span>
+            <span className={styles.badge}>🧗‍♂️ Bouldering</span>
+            <span className={styles.badge}>🍷 Wine Tasting</span>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.downloadSection}>
+        <div className={styles.downloadContent}>
+          <h2 className={styles.sectionTitle} style={{ color: "white" }}>Ready to find your match?</h2>
+          <p style={{ color: "#d1d5db", fontSize: "1.1rem", marginBottom: "30px" }}>Join thousands of singles who are already using Synqra to build meaningful relationships.</p>
+          <div className={styles.downloadButtons}>
+            <button className={styles.storeBtn}>
+              <span style={{ fontSize: "1.5rem" }}>🍎</span>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>Download on the</div>
+                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>App Store</div>
+              </div>
+            </button>
+            <button className={styles.storeBtn}>
+              <span style={{ fontSize: "1.5rem" }}>▶️</span>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>GET IT ON</div>
+                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>Google Play</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section className={styles.vipSection}>
         <div className={styles.vipLeft}>
           <div className={styles.vipLogo}>▽</div>
@@ -135,6 +224,33 @@ export default function Home() {
         <div style={{ flex: 1, padding: "0 20px" }}>
           <p style={{ fontSize: "1.1rem", color: "#111", fontWeight: 500, marginBottom: "15px" }}>Experience the world of elite personalized matchmaking and exclusive privacy by Synqra.</p>
           <Link href="/premium" className={styles.vipBtn}>Upgrade Now</Link>
+        </div>
+      </section>
+
+      <section className={styles.successSection}>
+        <h2 className={styles.sectionTitle}>Real Stories, Real Love</h2>
+        <div className={styles.successGrid}>
+          <div className={styles.successCard}>
+            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 1" className={styles.successImg} />
+            <div className={styles.successContent}>
+              <h3>Rahul & Priya</h3>
+              <p>"We matched on Synqra and never looked back! The detailed profiles helped us know we were compatible before we even said hello."</p>
+            </div>
+          </div>
+          <div className={styles.successCard}>
+            <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 2" className={styles.successImg} />
+            <div className={styles.successContent}>
+              <h3>Anil & Sneha</h3>
+              <p>"I was tired of endless swiping. Synqra's matching system helped me find someone who actually aligned with my values."</p>
+            </div>
+          </div>
+          <div className={styles.successCard}>
+            <img src="https://images.unsplash.com/photo-1621801306185-0dd50e82c589?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 3" className={styles.successImg} />
+            <div className={styles.successContent}>
+              <h3>Vikram & Neha</h3>
+              <p>"The icebreaker prompts were a lifesaver. It made starting a conversation so easy and natural. We're getting married next year!"</p>
+            </div>
+          </div>
         </div>
       </section>
 

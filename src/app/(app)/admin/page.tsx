@@ -17,6 +17,7 @@ interface User {
   createdAt: string;
   isAdmin?: boolean;
   verificationStatus?: string;
+  isBanned?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -95,6 +96,22 @@ export default function AdminDashboard() {
       setUsers(users.filter(u => u.id !== userId));
     } catch (err: any) {
       alert("Failed to delete user: " + err.message);
+    }
+  };
+
+  const handleBanUser = async (userId: string, userName: string, isBanned: boolean = false) => {
+    if (!window.confirm(`Are you sure you want to ${isBanned ? 'unban' : 'ban'} ${userName}?`)) {
+      return;
+    }
+    
+    try {
+      const { updateDoc } = await import("firebase/firestore");
+      await updateDoc(doc(db, "users", userId), {
+        isBanned: !isBanned
+      });
+      setUsers(users.map(u => u.id === userId ? { ...u, isBanned: !isBanned } : u));
+    } catch (err: any) {
+      alert("Failed to ban/unban user: " + err.message);
     }
   };
 
@@ -193,13 +210,7 @@ export default function AdminDashboard() {
   return (
     <main style={{ padding: "var(--spacing-xl)", minHeight: "100vh", backgroundColor: "var(--bg-color)" }}>
       <div className={styles.adminContainer}>
-        <header className={styles.header}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <Logo size={40} />
-            <h2>Admin Dashboard</h2>
-          </div>
-          <Link href="/discover" className="btn-glass">Exit Admin</Link>
-        </header>
+        
 
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
@@ -261,7 +272,8 @@ export default function AdminDashboard() {
                   </td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
-                    <div style={{ display: "flex", gap: "8px" }}>
+                    {user.isBanned && <span style={{ color: "#ef4444", fontWeight: "bold", marginRight: "8px" }}>BANNED</span>}
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       {!user.isAdmin && (
                         <>
                           <button 
@@ -269,6 +281,13 @@ export default function AdminDashboard() {
                             style={{ padding: "4px 8px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", color: user.verificationStatus === "verified" ? "white" : "#3b82f6", borderRadius: "4px", cursor: "pointer" }}
                           >
                             {user.verificationStatus === "verified" ? "Revoke" : "Verify"}
+                          </button>
+                          <button 
+                            className={styles.deleteBtn}
+                            onClick={() => handleBanUser(user.id, user.name, user.isBanned)}
+                            style={{ background: user.isBanned ? "var(--glass-bg)" : "" }}
+                          >
+                            {user.isBanned ? "Unban" : "Ban"}
                           </button>
                           <button 
                             className={styles.deleteBtn}
@@ -326,7 +345,7 @@ export default function AdminDashboard() {
                       <button 
                         className={styles.deleteBtn}
                         onClick={() => {
-                          handleDeleteUser(report.reportedId, report.reportedName);
+                          handleBanUser(report.reportedId, report.reportedName, false);
                           handleDismissReport(report.id);
                         }}
                       >

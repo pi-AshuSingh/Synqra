@@ -7,6 +7,7 @@ import { doc, getDoc, updateDoc, serverTimestamp, query, collection, where, getD
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 import styles from "./page.module.css";
 
 export default function Profile() {
@@ -20,7 +21,10 @@ export default function Profile() {
   const [bio, setBio] = useState("");
   const [username, setUsername] = useState("");
   const [city, setCity] = useState("");
+  const [travelCity, setTravelCity] = useState("");
   const [lookingFor, setLookingFor] = useState("");
+  const [isIncognito, setIsIncognito] = useState(false);
+  const [spotifyAnthem, setSpotifyAnthem] = useState("");
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(99);
   const [image1, setImage1] = useState("");
@@ -29,15 +33,14 @@ export default function Profile() {
 
   const [height, setHeight] = useState("");
   const [zodiac, setZodiac] = useState("");
+  const [mbti, setMbti] = useState("");
+  const [currentVibe, setCurrentVibe] = useState("");
   const [drinking, setDrinking] = useState("");
   const [smoking, setSmoking] = useState("");
 
   const [prompt, setPrompt] = useState("");
   const [promptAnswer, setPromptAnswer] = useState("");
   const [completionScore, setCompletionScore] = useState(0);
-  
-  const [isIncognito, setIsIncognito] = useState(false);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -56,7 +59,10 @@ export default function Profile() {
           setBio(data.bio || "");
           setUsername(data.username || "");
           setCity(data.city || "");
+          setTravelCity(data.travelCity || "");
           setLookingFor(data.lookingFor || "");
+          setIsIncognito(data.isIncognito || false);
+          setSpotifyAnthem(data.spotifyAnthem || "");
           setMinAge(data.minAgePref || 18);
           setMaxAge(data.maxAgePref || 99);
           
@@ -66,6 +72,8 @@ export default function Profile() {
 
           setHeight(data.height || "");
           setZodiac(data.zodiac || "");
+          setMbti(data.mbti || "");
+          setCurrentVibe(data.currentVibe || "");
           setDrinking(data.drinking || "");
           setSmoking(data.smoking || "");
 
@@ -109,7 +117,10 @@ export default function Profile() {
           setBio("");
           setUsername(newData.username);
           setCity("");
+          setTravelCity("");
           setLookingFor("Casual");
+          setIsIncognito(false);
+          setSpotifyAnthem("");
           setMinAge(18);
           setMaxAge(99);
           setImage1(newData.image);
@@ -117,6 +128,8 @@ export default function Profile() {
           setImage3("");
           setHeight("");
           setZodiac("");
+          setMbti("");
+          setCurrentVibe("");
           setDrinking("");
           setSmoking("");
           setPrompt("");
@@ -160,18 +173,22 @@ export default function Profile() {
         bio,
         username: username.toLowerCase(),
         city,
+        travelCity: profileData?.isPremium ? travelCity : "",
         lookingFor,
+        isIncognito: profileData?.isPremium ? isIncognito : false,
+        spotifyAnthem,
         minAgePref: minAge,
         maxAgePref: maxAge,
         image: image1, // fallback
         images: newImages,
         height,
         zodiac,
+        mbti,
+        currentVibe,
         drinking,
         smoking,
         prompt,
-        promptAnswer,
-        isIncognito
+        promptAnswer
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -245,26 +262,7 @@ export default function Profile() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <Logo size={32} />
-          <h2 className="text-gradient" style={{ margin: 0 }}>My Profile</h2>
-        </div>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Search 🔍
-          </Link>
-          <Link href="/sparks" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Sparks ✨
-          </Link>
-          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Discover
-          </Link>
-          <Link href="/matches" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Matches
-          </Link>
-        </div>
-      </header>
+      
 
       {profileData && (
         <div className={styles.profileCard}>
@@ -281,25 +279,22 @@ export default function Profile() {
             {profileData.username && (
               <p style={{ color: "var(--primary-color)", fontWeight: "500", marginTop: "4px" }}>@{profileData.username}</p>
             )}
-            <p style={{ color: "var(--text-muted)", textTransform: "capitalize", marginTop: "4px" }}>{profileData.gender}</p>
-            
-            {/* Profile Completion Bar */}
-            <div style={{ width: "100%", maxWidth: "300px", margin: "10px auto 0", textAlign: "left" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", marginBottom: "4px" }}>
-                <span>Profile Completion</span>
-                <span style={{ color: "var(--primary-color)", fontWeight: "bold" }}>{completionScore}%</span>
+
+            <div style={{ marginTop: "20px", background: "var(--bg-color)", padding: "15px", borderRadius: "12px", width: "100%", maxWidth: "400px", margin: "20px auto 0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>Profile Completion</span>
+                <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--primary-color)" }}>{completionScore}%</span>
               </div>
-              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "8px", height: "8px", overflow: "hidden" }}>
-                <div style={{ width: `${completionScore}%`, background: "var(--primary-color)", height: "100%", borderRadius: "8px" }}></div>
+              <div style={{ width: "100%", height: "8px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
+                <div style={{ width: `${completionScore}%`, height: "100%", background: "var(--primary-color)", transition: "width 0.5s ease-out" }}></div>
               </div>
-              {completionScore < 100 && (
-                <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", textAlign: "center" }}>
-                  Complete your profile to get more matches!
-                </div>
+              {completionScore === 100 && (
+                <p style={{ fontSize: "0.8rem", color: "#10b981", marginTop: "8px", fontWeight: 600 }}>🎉 Profile Complete! You're ready to find love.</p>
               )}
             </div>
-
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "16px" }}>
+            
+            <p style={{ color: "var(--text-muted)", textTransform: "capitalize", marginTop: "4px" }}>{profileData.gender}</p>
+                        <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "16px" }}>
               {(!profileData.verificationStatus || profileData.verificationStatus === "none") && (
                 <button 
                   onClick={handleRequestVerification}
@@ -351,12 +346,78 @@ export default function Profile() {
           </div>
 
           <div className={styles.formGroup}>
-            <label>City</label>
+            <label>Current Vibe (Status)</label>
+            <input 
+              type="text" 
+              className={styles.input} 
+              placeholder="e.g. ☕ Craving Coffee, 🎬 Movie night"
+              value={currentVibe}
+              onChange={e => setCurrentVibe(e.target.value)}
+              maxLength={30}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>City (Base Location)</label>
             <input 
               type="text" 
               className={styles.input} 
               value={city}
               onChange={e => setCity(e.target.value)}
+            />
+          </div>
+
+          <div style={{ marginTop: "1.5rem" }}>
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "8px" }}>
+              ✈️ Travel Mode (Premium)
+            </h3>
+            <div className={styles.formGroup} style={{ opacity: profileData?.isPremium ? 1 : 0.6 }}>
+              <label>Override City (Search matches elsewhere)</label>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <input 
+                  type="text" 
+                  className={styles.input} 
+                  placeholder="e.g. London"
+                  value={travelCity}
+                  onChange={e => setTravelCity(e.target.value)}
+                  disabled={!profileData?.isPremium}
+                />
+                {!profileData?.isPremium && (
+                  <button onClick={(e) => { e.preventDefault(); router.push("/premium"); }} className="btn-primary" style={{ padding: "0 16px" }}>
+                    Unlock
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", marginTop: "1.5rem", color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "8px" }}>
+              🕵️‍♂️ Incognito Mode (Premium)
+            </h3>
+            <div className={styles.formGroup} style={{ opacity: profileData?.isPremium ? 1 : 0.6 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <input 
+                  type="checkbox" 
+                  checked={isIncognito}
+                  onChange={e => setIsIncognito(e.target.checked)}
+                  disabled={!profileData?.isPremium}
+                  style={{ width: "20px", height: "20px" }}
+                />
+                Hide my profile unless I swipe right on them
+              </label>
+              {!profileData?.isPremium && (
+                <p style={{ fontSize: "0.8rem", color: "var(--primary-color)", marginTop: "4px" }}>Requires Synqra Premium</p>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Spotify Anthem</label>
+            <input 
+              type="text" 
+              className={styles.input} 
+              placeholder="e.g. 'Blinding Lights - The Weeknd' or Spotify Link"
+              value={spotifyAnthem}
+              onChange={e => setSpotifyAnthem(e.target.value)}
             />
           </div>
 
@@ -396,6 +457,28 @@ export default function Profile() {
                 <option value="Capricorn">Capricorn</option>
                 <option value="Aquarius">Aquarius</option>
                 <option value="Pisces">Pisces</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label>MBTI Type</label>
+              <select className={styles.input} value={mbti} onChange={e => setMbti(e.target.value)}>
+                <option value="">Select</option>
+                <option value="INTJ">INTJ</option>
+                <option value="INTP">INTP</option>
+                <option value="ENTJ">ENTJ</option>
+                <option value="ENTP">ENTP</option>
+                <option value="INFJ">INFJ</option>
+                <option value="INFP">INFP</option>
+                <option value="ENFJ">ENFJ</option>
+                <option value="ENFP">ENFP</option>
+                <option value="ISTJ">ISTJ</option>
+                <option value="ISFJ">ISFJ</option>
+                <option value="ESTJ">ESTJ</option>
+                <option value="ESFJ">ESFJ</option>
+                <option value="ISTP">ISTP</option>
+                <option value="ISFP">ISFP</option>
+                <option value="ESTP">ESTP</option>
+                <option value="ESFP">ESFP</option>
               </select>
             </div>
             <div className={styles.formGroup}>
@@ -504,6 +587,27 @@ export default function Profile() {
               ))}
             </div>
           </div>
+
+          {profileData?.blockedUsers && profileData.blockedUsers.length > 0 && (
+            <div className={styles.formGroup} style={{ marginTop: "1.5rem", padding: "1rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "12px", border: "1px solid rgba(239, 68, 68, 0.3)" }}>
+              <h3 style={{ color: "#ef4444", fontSize: "1rem", marginBottom: "8px" }}>Blocked Users</h3>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "12px" }}>You have blocked {profileData.blockedUsers.length} user(s). Unblock them to see them in your feed again.</p>
+              <button 
+                onClick={async () => {
+                  try {
+                    await updateDoc(doc(db, "users", user.uid), { blockedUsers: [] });
+                    setProfileData({ ...profileData, blockedUsers: [] });
+                    alert("All users unblocked successfully.");
+                  } catch (e) {
+                    alert("Failed to unblock users.");
+                  }
+                }}
+                style={{ padding: "6px 12px", background: "transparent", border: "1px solid #ef4444", color: "#ef4444", borderRadius: "6px", cursor: "pointer", fontSize: "0.8rem" }}
+              >
+                Unblock All
+              </button>
+            </div>
+          )}
 
           <div className={styles.actions}>
             <button className="btn-primary" onClick={handleSave} disabled={saving}>

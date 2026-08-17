@@ -7,6 +7,7 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import Logo from "@/components/Logo";
+import NotificationBell from "@/components/NotificationBell";
 import styles from "../matches/page.module.css";
 
 type Spark = {
@@ -90,20 +91,7 @@ export default function Sparks() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <Logo size={28} />
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <Link href="/search" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Search 🔍
-          </Link>
-          <Link href="/discover" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Discover
-          </Link>
-          <Link href="/matches" className="btn-glass" style={{ padding: "6px 12px", fontSize: "0.875rem" }}>
-            Matches
-          </Link>
-        </div>
-      </header>
+      
 
       <div style={{ padding: "var(--spacing-lg) var(--spacing-md)", paddingBottom: "10px" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "8px" }}>Who Liked You ✨</h1>

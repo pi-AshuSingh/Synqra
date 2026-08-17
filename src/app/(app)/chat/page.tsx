@@ -15,6 +15,7 @@ type Message = {
   senderId: string;
   createdAt: any;
   isRead?: boolean;
+  reaction?: string;
 };
 
 function ChatContent() {
@@ -30,6 +31,7 @@ function ChatContent() {
   const [inputText, setInputText] = useState("");
   const [targetVerified, setTargetVerified] = useState(false);
   const [targetOnline, setTargetOnline] = useState(false);
+  const [targetLookingFor, setTargetLookingFor] = useState("");
   const [isTargetTyping, setIsTargetTyping] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -99,6 +101,7 @@ function ChatContent() {
       if (snap.exists()) {
         const data = snap.data();
         if (data.verificationStatus === "verified") setTargetVerified(true);
+        if (data.lookingFor) setTargetLookingFor(data.lookingFor);
         if (data.lastActive && (new Date().getTime() - new Date(data.lastActive).getTime() < 15 * 60 * 1000)) {
           setTargetOnline(true);
         }
@@ -143,8 +146,25 @@ function ChatContent() {
         createdAt: serverTimestamp(),
         isRead: false
       });
+      setInputText("");
     } catch (err) {
       console.error("Error sending message", err);
+    }
+  };
+
+  const handleDoubleClickMessage = async (msgId: string) => {
+    if (!currentUser || !targetId) return;
+    const chatId = currentUser.uid < targetId 
+      ? `${currentUser.uid}_${targetId}` 
+      : `${targetId}_${currentUser.uid}`;
+      
+    try {
+      const { updateDoc } = await import("firebase/firestore");
+      await updateDoc(doc(db, "chats", chatId, "messages", msgId), {
+        reaction: "❤️"
+      });
+    } catch (err) {
+      console.error("Error adding reaction:", err);
     }
   };
 
@@ -185,6 +205,23 @@ function ChatContent() {
     }, 600);
   };
 
+  const handleReportMessage = async (msgId: string, text: string) => {
+    if (!confirm("Are you sure you want to report this message?")) return;
+    try {
+      await addDoc(collection(db, "reports"), {
+        reporterId: currentUser.uid,
+        reportedUserId: targetId,
+        messageId: msgId,
+        messageText: text,
+        type: "message",
+        timestamp: serverTimestamp()
+      });
+      alert("Message reported successfully.");
+    } catch (err) {
+      console.error("Error reporting message:", err);
+    }
+  };
+
   const handleUnmatch = async () => {
     if (!currentUser || !targetId) return;
     
@@ -206,38 +243,11 @@ function ChatContent() {
 
   return (
     <main className={styles.container}>
-      <header className={styles.header}>
-        <button className={styles.backBtn} onClick={() => router.back()}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </button>
-        <div className={styles.profileInfo} style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ position: "relative" }}>
-            {targetImg && <img src={targetImg} alt={targetName} className={styles.avatar} />}
-            {targetOnline && (
-              <div style={{ position: "absolute", bottom: "0", right: "0", background: "#22c55e", width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--glass-bg)" }}></div>
-            )}
-          </div>
-          <div className={styles.name} style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              {targetName}
-              {targetVerified && (
-                <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                </div>
-              )}
-            </div>
-            {targetUsername && (
-              <span style={{ fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: "normal" }}>@{targetUsername}</span>
-            )}
-          </div>
+      {targetLookingFor && (
+        <div style={{ background: "var(--bg-secondary)", padding: "8px", textAlign: "center", fontSize: "0.85rem", color: "var(--primary-color)", borderBottom: "1px solid var(--border-color)" }}>
+          <span style={{ fontWeight: 600 }}>{targetName} is looking for:</span> {targetLookingFor}
         </div>
-        <button 
-          onClick={handleUnmatch}
-          style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.8rem', cursor: 'pointer', padding: '8px' }}
-        >
-          Unmatch
-        </button>
-      </header>
+      )}
 
       <div className={styles.chatArea}>
         {messages.length === 0 ? (
@@ -249,16 +259,35 @@ function ChatContent() {
             const isMe = msg.senderId === currentUser?.uid;
             return (
               <div key={msg.id} className={`${styles.messageRow} ${isMe ? styles.sent : styles.received}`}>
-                <div className={styles.message}>
+                <div 
+                  className={styles.message} 
+                  onDoubleClick={() => !isMe && handleDoubleClickMessage(msg.id)}
+                  style={{ position: "relative", cursor: !isMe ? "pointer" : "default" }}
+                  title={!isMe ? "Double click to heart" : ""}
+                >
                   {msg.text}
+                  {msg.reaction && (
+                    <div style={{ position: "absolute", bottom: "-10px", right: "-10px", background: "white", borderRadius: "50%", padding: "2px", fontSize: "0.8rem", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+                      {msg.reaction}
+                    </div>
+                  )}
                   {isMe && (
                     <div style={{ fontSize: "0.6rem", textAlign: "right", marginTop: "4px", opacity: 0.8, color: msg.isRead ? "#60a5fa" : "inherit" }}>
                       {msg.isRead ? "✓✓" : "✓"}
                     </div>
                   )}
                 </div>
-                <div className={styles.timestamp}>
-                  {msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}
+                <div className={styles.timestamp} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span>{msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Just now'}</span>
+                  {!isMe && (
+                    <button 
+                      onClick={() => handleReportMessage(msg.id, msg.text)}
+                      style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.8rem", opacity: 0.5 }}
+                      title="Report message"
+                    >
+                      🚩
+                    </button>
+                  )}
                 </div>
               </div>
             );
