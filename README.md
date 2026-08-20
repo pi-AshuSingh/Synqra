@@ -35,9 +35,29 @@ Synqra has been built from the ground up to be an aesthetic, high-performance we
 ### ✨ Matches Dashboard
 - A dedicated page at `/matches` to view a beautiful grid of all the profiles you have 'Sparked' with.
 
+### 💬 Real-Time Chat
+- **Instant Messaging:** Real-time sync with Firestore.
+- **Typing Indicators:** See when the other person is typing in real-time.
+- **Read Receipts:** Know exactly when your match reads your message (✓✓).
+- **Message Reactions:** Double-click any message bubble to instantly heart (❤️) it.
+
+### 💎 Premium Features
+- **Incognito Mode:** Browse completely hidden. Only people you swipe right on will ever see your profile.
+- **Profile Boosting:** Pin your profile to the top of everyone's feed for 30 minutes for maximum visibility.
+- **Advanced Filtering:** Filter matches by Age, Zodiac sign, Drinking, Smoking, and more.
+
+### 🔔 Notification Center
+- **Real-time Alerts:** Get notified instantly when you receive a Like, a Match, or a Profile View.
+- **Dedicated Hub:** A dedicated `/notifications` page to track all your historical interactions.
+
+### 🛠️ Trust & Safety
+- **Verified Profiles:** Request verification to get the blue checkmark.
+- **Granular Reporting:** Report specific, individual messages in chat directly to admins instead of just vague profile reports.
+- **Profile Completion Score:** A gamified progress bar to encourage users to fill out their bios and add photos.
+
 ### ⚙️ My Profile Editor
 - Edit your Bio, City, and Intent at any time.
-- See exactly how your profile looks to others.
+- Answer Icebreaker Prompts (e.g. "Two truths and a lie...") and set your Spotify Anthem.
 - Securely log out.
 
 ### 🛡️ Admin Dashboard
