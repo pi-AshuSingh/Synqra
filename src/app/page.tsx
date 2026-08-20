@@ -120,23 +120,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <div className={styles.statsSection}>
-        <div className={styles.statBox}>
-          <div className={styles.statNumber}>10,000+</div>
-          <div className={styles.statLabel}>Active Users</div>
-        </div>
-        <div className={styles.statDivider}></div>
-        <div className={styles.statBox}>
-          <div className={styles.statNumber}>500k+</div>
-          <div className={styles.statLabel}>Connections</div>
-        </div>
-        <div className={styles.statDivider}></div>
-        <div className={styles.statBox}>
-          <div className={styles.statNumber}>2M+</div>
-          <div className={styles.statLabel}>Messages</div>
-        </div>
-      </div>
+      {/* Removed fake stats section to maintain authenticity */}
 
       <div className={styles.trustBanner}>
         <div className={styles.trustItem}>
@@ -300,27 +284,27 @@ export default function Home() {
       </section>
 
       <section className={styles.successSection}>
-        <h2 className={styles.sectionTitle}>Real Stories, Real Love</h2>
+        <h2 className={styles.sectionTitle}>What to Expect</h2>
         <div className={styles.successGrid}>
           <div className={styles.successCard}>
-            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 1" className={styles.successImg} />
+            <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Authentic Connections" className={styles.successImg} />
             <div className={styles.successContent}>
-              <h3>Rahul & Priya</h3>
-              <p>"We matched on Synqra and never looked back! The detailed profiles helped us know we were compatible before we even said hello."</p>
+              <h3>Authentic Connections</h3>
+              <p>We require verified profiles and clear dating intentions so you know exactly who you're talking to and what they're looking for.</p>
             </div>
           </div>
           <div className={styles.successCard}>
-            <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 2" className={styles.successImg} />
+            <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Meaningful Conversations" className={styles.successImg} />
             <div className={styles.successContent}>
-              <h3>Anil & Sneha</h3>
-              <p>"I was tired of endless swiping. Synqra's matching system helped me find someone who actually aligned with my values."</p>
+              <h3>Meaningful Conversations</h3>
+              <p>With our Icebreaker Prompts and Aura Tags, starting a conversation is natural, easy, and goes beyond just a simple "hello".</p>
             </div>
           </div>
           <div className={styles.successCard}>
-            <img src="https://images.unsplash.com/photo-1621801306185-0dd50e82c589?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 3" className={styles.successImg} />
+            <img src="https://images.unsplash.com/photo-1621801306185-0dd50e82c589?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Absolute Privacy" className={styles.successImg} />
             <div className={styles.successContent}>
-              <h3>Vikram & Neha</h3>
-              <p>"The icebreaker prompts were a lifesaver. It made starting a conversation so easy and natural. We're getting married next year!"</p>
+              <h3>Absolute Privacy</h3>
+              <p>Your data is protected. With Premium Incognito Mode, you have complete control over who gets to see your profile.</p>
             </div>
           </div>
         </div>
@@ -329,37 +313,14 @@ export default function Home() {
       <section id="about" className={styles.founderSection}>
         <div className={styles.founderContent}>
           <div className={styles.quoteMark}>“</div>
-          <h2 className={styles.founderQuote}>At Synqra, it is our mission to use technology to bring back deep and meaningful relationships.</h2>
-          <p className={styles.founderName}>- Founder & CEO</p>
+          <h2 className={styles.founderQuote}>At Synqra, it is our mission to use technology to bring back deep and meaningful relationships. We focus on quality over quantity.</h2>
+          <p className={styles.founderName}>- Ashutosh Kumar Singh, Founder</p>
         </div>
         <div className={styles.founderImgWrapper}>
           <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Founder" className={styles.founderImg} />
         </div>
       </section>
 
-      <section className={styles.storiesSection}>
-        <div className={styles.storiesLeft}>
-          <h2>Real Connections, Deep Conversations</h2>
-          <p>Discover how Synqra brings together compatible individuals through our AI-driven aura matching and dating intentions.</p>
-          <Link href="/login" className={styles.searchBtn} style={{ display: "inline-block", textDecoration: "none", marginTop: "10px" }}>Know more →</Link>
-        </div>
-        <div className={styles.storiesGrid}>
-          <div className={styles.storyCard}>
-            <img src="https://images.unsplash.com/photo-1583939411023-14783179e581?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Couple 1" className={styles.storyImg} />
-            <div className={styles.storyContent}>
-              <h3>A Match Made in Synqra</h3>
-              <p>We met on Synqra and immediately connected over our shared interests and similar dating intentions. Best decision ever!</p>
-            </div>
-          </div>
-          <div className={styles.storyCard}>
-            <img src="/images/meaningful_conversations_2.png" alt="Couple 2" className={styles.storyImg} />
-            <div className={styles.storyContent}>
-              <h3>Meaningful Conversations</h3>
-              <p>Synqra's matching system helped me find someone who actually aligned with my values. No more pointless swiping.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section id="help" className={styles.faqSection}>
         <h2 className={styles.sectionTitle} style={{ textAlign: "left", marginBottom: "30px" }}>Frequently Asked Questions</h2>
