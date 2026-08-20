@@ -30,6 +30,7 @@ export default function Profile() {
   const [image1, setImage1] = useState("");
   const [image2, setImage2] = useState("");
   const [image3, setImage3] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
 
   const [height, setHeight] = useState("");
   const [zodiac, setZodiac] = useState("");
@@ -69,6 +70,7 @@ export default function Profile() {
           setImage1(data.images?.[0] || data.image || "");
           setImage2(data.images?.[1] || "");
           setImage3(data.images?.[2] || "");
+          setVideoUrl(data.videoUrl || "");
 
           setHeight(data.height || "");
           setZodiac(data.zodiac || "");
@@ -126,6 +128,7 @@ export default function Profile() {
           setImage1(newData.image);
           setImage2("");
           setImage3("");
+          setVideoUrl("");
           setHeight("");
           setZodiac("");
           setMbti("");
@@ -181,6 +184,7 @@ export default function Profile() {
         maxAgePref: maxAge,
         image: image1, // fallback
         images: newImages,
+        videoUrl,
         height,
         zodiac,
         mbti,
@@ -335,6 +339,12 @@ export default function Profile() {
           <div className={styles.formGroup}>
             <label>Photo 3</label>
             <input type="url" className={styles.input} value={image3} onChange={e => setImage3(e.target.value)} />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label style={{ color: "#06b6d4", fontWeight: "bold" }}>Profile Video (URL - .mp4)</label>
+            <input type="url" className={styles.input} value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" />
+            <p style={{fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px"}}>Stand out with an auto-playing video profile card! Replaces images on Discover.</p>
           </div>
 
           <div className={styles.formGroup}>

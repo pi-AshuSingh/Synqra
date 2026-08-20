@@ -25,6 +25,8 @@ Synqra has been built from the ground up to be an aesthetic, high-performance we
 ### 💖 The Swiping Engine
 - **Discover Profiles:** Browse profiles one by one in a stack-like UI.
 - **Like or Pass:** Swipe right (Spark) or swipe left (Pass).
+- **Super Sparks & Notes:** Send high-priority 'Super Sparks' directly from the feed with a personalized note to grab attention immediately.
+- **Profile Videos:** Experience dynamic dating cards! See auto-playing profile videos instead of just static images.
 - **Smart Filtering:** The app automatically hides people you have already interacted with so you never see duplicates.
 
 ### 👤 Enhanced Profiles & Onboarding
@@ -51,8 +53,10 @@ Synqra has been built from the ground up to be an aesthetic, high-performance we
 - **Dedicated Hub:** A dedicated `/notifications` page to track all your historical interactions.
 
 ### 🛠️ Trust & Safety
+- **Community Safety Pledge:** A mandatory pledge all new users must agree to, encouraging kindness and respect.
 - **Verified Profiles:** Request verification to get the blue checkmark.
 - **Granular Reporting:** Report specific, individual messages in chat directly to admins instead of just vague profile reports.
+- **Online Presence Dots:** Easily spot a green dot next to the names of users who are currently active online.
 - **Profile Completion Score:** A gamified progress bar to encourage users to fill out their bios and add photos.
 
 ### ⚙️ My Profile Editor

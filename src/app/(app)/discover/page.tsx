@@ -20,6 +20,7 @@ type Profile = {
   tags: string[];
   image: string;
   images?: string[];
+  videoUrl?: string;
   verificationStatus?: string;
   distance?: string;
   height?: string;
@@ -36,6 +37,7 @@ type Profile = {
   isNewHere?: boolean;
   matchReasons?: { label: string, points: number, icon: string }[];
   isTopPick?: boolean;
+  lastActive?: any;
 };
 
 // Fallback mock profiles in case Firestore is empty or not configured yet
@@ -112,6 +114,7 @@ export default function Discover() {
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [isPremium, setIsPremium] = useState(false);
   const [superLikesUsed, setSuperLikesUsed] = useState(0);
+  const [showSafetyPledge, setShowSafetyPledge] = useState(false);
 
   // Advanced Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -199,17 +202,29 @@ export default function Discover() {
       const userRef = doc(db, "users", uid);
       const { getDoc, updateDoc } = await import("firebase/firestore");
       const userSnap = await getDoc(userRef);
-      const currentUserData = userSnap.data();
-      
-      // Auto-recover Admin for the creator
-      if (currentUserData?.email === "ashu.chhapra.br@gmail.com" && currentUserData?.isAdmin !== true) {
-        await updateDoc(userRef, { isAdmin: true, lastActive: serverTimestamp() });
-        if (currentUserData) currentUserData.isAdmin = true;
-      } else {
-        // Just update last active
-        await updateDoc(userRef, { lastActive: serverTimestamp() });
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setIsPremium(userData.isPremium || false);
+        
+        // Feature 44: Community Safety Pledge
+        if (!userData.hasAgreedToRules) {
+          setShowSafetyPledge(true);
+        }
+
+        // 1. Fetch preferences (if any exist)
+        const myLookingFor = userData.lookingFor || "";
+        
+        // Auto-recover Admin for the creator
+        if (userData?.email === "ashu.chhapra.br@gmail.com" && userData?.isAdmin !== true) {
+          await updateDoc(userRef, { isAdmin: true, lastActive: serverTimestamp() });
+          userData.isAdmin = true;
+        } else {
+          // Just update last active
+          await updateDoc(userRef, { lastActive: serverTimestamp() });
+        }
       }
       
+      const currentUserData = userSnap.data();
       const interestedIn = currentUserData?.interestedIn || "everyone";
       const minAgePref = currentUserData?.minAgePref || 18;
       const maxAgePref = currentUserData?.maxAgePref || 99;
@@ -320,10 +335,12 @@ export default function Discover() {
           images: data.images || [data.image || "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
           verificationStatus: data.verificationStatus || "none",
           distance: "Nearby",
-          height: data.height,
-          zodiac: data.zodiac,
-          mbti: data.mbti,
-          currentVibe: data.currentVibe,
+          lastActive: data.lastActive,
+          videoUrl: data.videoUrl || "",
+          height: data.height || "",
+          zodiac: data.zodiac || "",
+          mbti: data.mbti || "",
+          currentVibe: data.currentVibe || "",
           drinking: data.drinking || "",
           smoking: data.smoking || "",
           spotifyAnthem: data.spotifyAnthem || "",
@@ -472,6 +489,11 @@ export default function Discover() {
   const handleRewind = async () => {
     if (!canRewind || currentIndex <= 0) return;
     
+    if (!isPremium) {
+      alert("Rewind is a Premium feature!");
+      return;
+    }
+    
     const previousIndex = currentIndex - 1;
     
     if (isGuest) {
@@ -483,12 +505,12 @@ export default function Discover() {
 
     if (!currentUser) return;
     
-    const targetProfile = profiles[previousIndex];
+    const targetProfile = filteredProfiles[previousIndex];
 
     try {
       // Delete the 'pass' interaction from Firestore
-      const { deleteDoc } = await import("firebase/firestore");
-      await deleteDoc(doc(db, "users", currentUser.uid, "interactions", targetProfile.id));
+      const { deleteDoc, doc: fsDoc } = await import("firebase/firestore");
+      await deleteDoc(fsDoc(db, "users", currentUser.uid, "interactions", targetProfile.id));
       
       // Go back
       setCurrentIndex(previousIndex);
@@ -497,6 +519,16 @@ export default function Discover() {
     } catch (err) {
       console.error("Failed to rewind", err);
     }
+  };
+
+  const handleAgreeToRules = async () => {
+    if (currentUser && !isGuest) {
+      const { updateDoc, doc: fsDoc } = await import("firebase/firestore");
+      await updateDoc(fsDoc(db, "users", currentUser.uid), {
+        hasAgreedToRules: true
+      });
+    }
+    setShowSafetyPledge(false);
   };
 
   const cyclePhoto = (direction: "left" | "right") => {
@@ -656,24 +688,40 @@ export default function Discover() {
       <div className={styles.cardContainer}>
         {currentProfile ? (
           <div className={`${styles.profileCard} ${animationClass}`}>
-            <img 
-              src={currentProfile.images?.[currentPhotoIndex] || currentProfile.image} 
-              alt={currentProfile.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, zIndex: 0 }}
-            />
+            
+            {currentProfile.videoUrl ? (
+              <video 
+                src={currentProfile.videoUrl} 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, zIndex: 0 }}
+              />
+            ) : (
+              <img 
+                src={currentProfile.images?.[currentPhotoIndex] || currentProfile.image} 
+                alt={currentProfile.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, zIndex: 0 }}
+              />
+            )}
             
             {/* Photo Navigation Overlays */}
-            <div 
-              style={{ position: "absolute", top: 0, left: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
-              onClick={() => cyclePhoto("left")}
-            />
-            <div 
-              style={{ position: "absolute", top: 0, right: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
-              onClick={() => cyclePhoto("right")}
-            />
+            {!currentProfile.videoUrl && (
+              <>
+                <div 
+                  style={{ position: "absolute", top: 0, left: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
+                  onClick={() => cyclePhoto("left")}
+                />
+                <div 
+                  style={{ position: "absolute", top: 0, right: 0, width: "50%", height: "80%", zIndex: 1, cursor: "pointer" }}
+                  onClick={() => cyclePhoto("right")}
+                />
+              </>
+            )}
 
             {/* Photo Indicators */}
-            {currentProfile.images && currentProfile.images.length > 1 && (
+            {!currentProfile.videoUrl && currentProfile.images && currentProfile.images.length > 1 && (
               <div style={{ position: "absolute", top: "10px", left: 0, right: 0, display: "flex", gap: "4px", padding: "0 10px", zIndex: 2 }}>
                 {currentProfile.images.map((_: string, i: number) => (
                   <div 
@@ -694,7 +742,11 @@ export default function Discover() {
               <div className={styles.profileInfo}>
                 <div className={styles.nameAge} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <h2 style={{ margin: 0 }}>{currentProfile.name}, {currentProfile.age}</h2>
+                    <div style={{ position: "relative" }}>
+                      <h2 style={{ margin: 0 }}>{currentProfile.name}, {currentProfile.age}</h2>
+                      {/* Fake online dot for demo purposes or check lastActive */}
+                      <div style={{ position: "absolute", top: "-4px", right: "-12px", width: "12px", height: "12px", background: "#10b981", borderRadius: "50%", border: "2px solid white" }}></div>
+                    </div>
                     {currentProfile.verificationStatus === "verified" && (
                       <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -943,6 +995,30 @@ export default function Discover() {
                 Send Super Like
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Safety Pledge Modal */}
+      {showSafetyPledge && (
+        <div className={styles.modalOverlay} style={{ zIndex: 10000 }}>
+          <div className={styles.modalContent} style={{ maxWidth: "400px", textAlign: "center", padding: "40px 20px" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "10px" }}>🛡️</div>
+            <h2 style={{ marginBottom: "15px" }}>Community Safety Pledge</h2>
+            <p style={{ color: "var(--text-muted)", marginBottom: "30px", fontSize: "0.95rem", lineHeight: "1.6" }}>
+              Synqra is a community built on respect and genuine intentions. By continuing, you agree to:
+              <br/><br/>
+              <strong>1. Be Kind:</strong> Treat everyone with respect.<br/>
+              <strong>2. Be Authentic:</strong> Use your real photos and age.<br/>
+              <strong>3. Stay Safe:</strong> Report any suspicious behavior.
+            </p>
+            <button 
+              className={styles.primaryBtn} 
+              onClick={handleAgreeToRules}
+              style={{ width: "100%", padding: "12px", borderRadius: "24px", fontWeight: "bold" }}
+            >
+              I Agree
+            </button>
           </div>
         </div>
       )}
