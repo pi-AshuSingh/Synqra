@@ -89,6 +89,38 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PHONE DEMO SECTION */}
+      <section className={styles.phoneDemoSection}>
+        <div className={styles.phoneDemoText}>
+          <h2>Swipe into your next great story</h2>
+          <p>
+            Experience dating like never before. With Synqra's intuitive swipe gestures, you can browse verified profiles tailored just for you. Send a Spark, or use a Super Spark to attach a personalized note.
+          </p>
+          <Link href="/login" className={styles.searchBtn} style={{ textDecoration: "none" }}>
+            Try it now
+          </Link>
+        </div>
+
+        <div className={styles.phoneMockup}>
+          <div className={styles.phoneHeader}>Synqra</div>
+          <div className={styles.phoneNotch}></div>
+          <div className={styles.phoneScreen}>
+            <div className={styles.phoneCard}>
+              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Demo Profile" className={styles.phoneCardImg} />
+              <div className={styles.phoneCardInfo}>
+                <div className={styles.phoneCardName}>Priya, 26</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "5px" }}>📍 Mumbai • Creative</div>
+              </div>
+              <div className={styles.phoneCardActions}>
+                <div className={styles.phoneActionBtn}>✕</div>
+                <div className={styles.phoneActionBtn} style={{ color: "#3b82f6" }}>⭐</div>
+                <div className={styles.phoneActionBtn} style={{ color: "#ec4899" }}>❤️</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className={styles.statsSection}>
         <div className={styles.statBox}>
           <div className={styles.statNumber}>10,000+</div>
@@ -227,6 +259,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PREMIUM FEATURES GRID */}
+      <section className={styles.premiumFeaturesSection}>
+        <h2>Why Upgrade to Premium?</h2>
+        <p style={{ color: "#9ca3af", maxWidth: "600px", margin: "10px auto 0" }}>
+          Synqra Premium gives you the ultimate control over your dating life.
+        </p>
+        <div className={styles.premiumFeaturesGrid}>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>🕵️‍♂️</div>
+            <h3>Incognito Mode</h3>
+            <p>Browse completely hidden. Only people you swipe right on will ever see your profile in their feed.</p>
+          </div>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>⭐</div>
+            <h3>Super Sparks</h3>
+            <p>Stand out from the crowd! Send a Super Spark with a personalized note attached to guarantee you get noticed.</p>
+          </div>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>🎬</div>
+            <h3>Video Profiles</h3>
+            <p>Upload a looping video to your profile card. Show your authentic self and instantly increase your matches.</p>
+          </div>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>🚀</div>
+            <h3>Profile Boost</h3>
+            <p>Be the top profile in your area for 30 minutes. Get up to 10x more views and matches instantly.</p>
+          </div>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>⏪</div>
+            <h3>Unlimited Rewinds</h3>
+            <p>Accidentally swiped left on the love of your life? Instantly take it back with unlimited rewinds.</p>
+          </div>
+          <div className={styles.premiumFeatureCard}>
+            <div className={styles.premiumFeatureIcon}>🎯</div>
+            <h3>Advanced Filters</h3>
+            <p>Filter your feed by Zodiac sign, drinking preferences, and more to find exactly who you're looking for.</p>
+          </div>
+        </div>
+      </section>
+
       <section className={styles.successSection}>
         <h2 className={styles.sectionTitle}>Real Stories, Real Love</h2>
         <div className={styles.successGrid}>
@@ -315,8 +387,46 @@ export default function Home() {
         ))}
       </section>
 
-      <footer className={styles.footer}>
-        <p>© 2026 Synqra Dating App. All rights reserved.</p>
+      {/* ENHANCED FOOTER */}
+      <footer className={styles.enhancedFooter}>
+        <div className={styles.footerGrid}>
+          <div className={styles.footerBrand}>
+            <Logo size={40} />
+            <p>
+              Synqra is revolutionizing modern dating by focusing on authenticity, transparency, and deep connections. Choose your forever.
+            </p>
+          </div>
+          <div className={styles.footerLinks}>
+            <h4>Company</h4>
+            <Link href="#about">About Us</Link>
+            <Link href="#">Careers</Link>
+            <Link href="#">Press</Link>
+            <Link href="#">Blog</Link>
+          </div>
+          <div className={styles.footerLinks}>
+            <h4>Legal</h4>
+            <Link href="#">Privacy Policy</Link>
+            <Link href="#">Terms of Service</Link>
+            <Link href="#">Cookie Policy</Link>
+            <Link href="#help">Safety Tips</Link>
+          </div>
+          <div className={styles.footerNewsletter}>
+            <h4>Stay Updated</h4>
+            <form onSubmit={(e) => { e.preventDefault(); alert("Subscribed!"); }}>
+              <input type="email" placeholder="Enter your email" required />
+              <button type="submit">Subscribe</button>
+            </form>
+          </div>
+        </div>
+        
+        <div className={styles.footerBottom}>
+          <div>© {new Date().getFullYear()} Synqra Dating App. All rights reserved.</div>
+          <div className={styles.footerSocials}>
+            <a href="#">Instagram</a>
+            <a href="#">Twitter</a>
+            <a href="#">TikTok</a>
+          </div>
+        </div>
       </footer>
     </main>
   );
