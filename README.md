@@ -66,6 +66,12 @@ Synqra has been built from the ground up to be an aesthetic, high-performance we
 
 ### 🛡️ Admin Dashboard
 - Protected `/admin` route explicitly accessible only to accounts with an `isAdmin: true` flag in Firestore. 
+- Dynamic checks ensure secure access for the primary admin email regardless of initial signup flow (Email/Password or Google).
+
+### 🎨 Premium Landing Page (New)
+- **Interactive Phone Demo:** A glassmorphic iPhone mockup right on the index page demonstrating the swiping interface.
+- **Authenticity First:** "What to Expect" section replaces fake marketing data with core values (Authentic Connections, Meaningful Conversations, Absolute Privacy).
+- **Premium Grid & Enhanced Footer:** Dedicated feature showcases and a professional multi-column footer layout.
 
 ---
 
