@@ -225,13 +225,18 @@ function ChatContent() {
   const handleUnmatch = async () => {
     if (!currentUser || !targetId) return;
     
-    if (confirm(`Are you sure you want to unmatch with ${targetName}?`)) {
+    if (confirm(`Are you sure you want to unmatch and block ${targetName}?`)) {
       try {
-        const { deleteDoc, doc } = await import("firebase/firestore");
+        const { deleteDoc, doc, updateDoc, arrayUnion } = await import("firebase/firestore");
         // Delete interaction from our side
         await deleteDoc(doc(db, "users", currentUser.uid, "interactions", targetId));
         // Delete the receivedLike we sent them
         await deleteDoc(doc(db, "users", targetId, "receivedLikes", currentUser.uid));
+        
+        // Add to blockedUsers array
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          blockedUsers: arrayUnion(targetId)
+        });
         
         router.push("/matches");
       } catch (err) {

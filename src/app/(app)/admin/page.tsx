@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [verificationRequests, setVerificationRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
           setIsAdmin(true);
           fetchUsers();
           fetchReports();
+          fetchVerificationRequests();
         } else {
           setError("Access Denied. You do not have admin privileges.");
           setLoading(false);
@@ -83,6 +85,38 @@ export default function AdminDashboard() {
       setReports(repsData);
     } catch (err: any) {
       console.error("Failed to fetch reports:", err);
+    }
+  };
+
+  const fetchVerificationRequests = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "verificationRequests"));
+      const reqsData: any[] = [];
+      querySnapshot.forEach((doc) => {
+        reqsData.push({ id: doc.id, ...doc.data() });
+      });
+      setVerificationRequests(reqsData);
+    } catch (err: any) {
+      console.error("Failed to fetch verification requests:", err);
+    }
+  };
+
+  const handleApproveVerification = async (reqId: string, userId: string, approved: boolean) => {
+    try {
+      const { updateDoc } = await import("firebase/firestore");
+      // Update user document
+      await updateDoc(doc(db, "users", userId), {
+        verificationStatus: approved ? "verified" : "none"
+      });
+      // Delete the request
+      await deleteDoc(doc(db, "verificationRequests", reqId));
+      
+      setVerificationRequests(verificationRequests.filter(r => r.id !== reqId));
+      setUsers(users.map(u => u.id === userId ? { ...u, verificationStatus: approved ? "verified" : "none" } : u));
+      
+      alert(`Verification ${approved ? 'Approved' : 'Denied'}!`);
+    } catch (err: any) {
+      alert("Failed to process verification: " + err.message);
     }
   };
 
@@ -306,6 +340,58 @@ export default function AdminDashboard() {
                 <tr>
                   <td colSpan={5} style={{ textAlign: "center", padding: "2rem" }}>
                     No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style={{ marginTop: "2rem" }}>Verification Requests</h3>
+        <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+          Review pending selfie verification requests to grant the blue checkmark.
+        </p>
+        <div className={styles.usersTableContainer}>
+          <table className={styles.usersTable}>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Selfie Link</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {verificationRequests.map((req) => (
+                <tr key={req.id}>
+                  <td style={{ fontWeight: 600 }}>{req.name} (@{req.username})</td>
+                  <td>
+                    <a href={req.photoUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary-color)", textDecoration: "underline" }}>View Image</a>
+                  </td>
+                  <td>{new Date(req.timestamp).toLocaleDateString()}</td>
+                  <td>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button 
+                        onClick={() => handleApproveVerification(req.id, req.userId, true)}
+                        style={{ padding: "4px 8px", background: "var(--primary-color)", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        className={styles.deleteBtn}
+                        onClick={() => handleApproveVerification(req.id, req.userId, false)}
+                      >
+                        Deny
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              
+              {verificationRequests.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+                    No pending verification requests.
                   </td>
                 </tr>
               )}

@@ -7,6 +7,14 @@ import { auth, db } from "@/lib/firebase";
 
 export default function ClientPresence() {
   useEffect(() => {
+    // Initialize Theme
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {

@@ -42,6 +42,35 @@ export default function Profile() {
   const [prompt, setPrompt] = useState("");
   const [promptAnswer, setPromptAnswer] = useState("");
   const [completionScore, setCompletionScore] = useState(0);
+  
+  // Phase 11 Features
+  const [voicePromptUrl, setVoicePromptUrl] = useState("");
+  const [dealbreaker, setDealbreaker] = useState("");
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationSelfieUrl, setVerificationSelfieUrl] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+      document.body.classList.add("dark-mode");
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      if (next) {
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.body.classList.remove("dark-mode");
+        localStorage.setItem("theme", "light");
+      }
+      return next;
+    });
+  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -81,6 +110,8 @@ export default function Profile() {
 
           setPrompt(data.prompt || "");
           setPromptAnswer(data.promptAnswer || "");
+          setVoicePromptUrl(data.voicePromptUrl || "");
+          setDealbreaker(data.dealbreaker || "");
           
           setIsIncognito(data.isIncognito || false);
 
@@ -192,7 +223,9 @@ export default function Profile() {
         drinking,
         smoking,
         prompt,
-        promptAnswer
+        promptAnswer,
+        voicePromptUrl,
+        dealbreaker
       });
       alert("Profile updated successfully!");
     } catch (err: any) {
@@ -207,13 +240,31 @@ export default function Profile() {
     router.push("/");
   };
 
-  const handleRequestVerification = async () => {
+  const handleRequestVerification = () => {
+    setShowVerificationModal(true);
+  };
+
+  const submitVerification = async () => {
     if (!user) return;
+    if (!verificationSelfieUrl) {
+      return alert("Please provide a link to your selfie.");
+    }
     try {
+      // 1. Update user document status
       await updateDoc(doc(db, "users", user.uid), {
         verificationStatus: "pending"
       });
+      // 2. Add to verificationRequests collection
+      await setDoc(doc(db, "verificationRequests", user.uid), {
+        userId: user.uid,
+        name: profileData.name,
+        username: profileData.username,
+        photoUrl: verificationSelfieUrl,
+        timestamp: serverTimestamp(),
+        status: "pending"
+      });
       setProfileData({ ...profileData, verificationStatus: "pending" });
+      setShowVerificationModal(false);
       alert("Verification request sent! An admin will review your profile.");
     } catch (err: any) {
       alert("Failed to request verification: " + err.message);
@@ -418,6 +469,21 @@ export default function Profile() {
                 <p style={{ fontSize: "0.8rem", color: "var(--primary-color)", marginTop: "4px" }}>Requires Synqra Premium</p>
               )}
             </div>
+
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", marginTop: "1.5rem", color: "var(--primary-color)", display: "flex", alignItems: "center", gap: "8px" }}>
+              🌙 Dark Mode
+            </h3>
+            <div className={styles.formGroup}>
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <input 
+                  type="checkbox" 
+                  checked={isDarkMode}
+                  onChange={toggleDarkMode}
+                  style={{ width: "20px", height: "20px" }}
+                />
+                Enable Dark Mode theme
+              </label>
+            </div>
           </div>
 
           <div className={styles.formGroup}>
@@ -563,6 +629,30 @@ export default function Profile() {
                   </button>
                 )}
               </div>
+              {profileData?.isPremium && (
+                <input 
+                  type="url" 
+                  className={styles.input} 
+                  placeholder="Paste URL to an audio file (e.g. mp3) or Vocaroo link" 
+                  value={voicePromptUrl} 
+                  onChange={e => setVoicePromptUrl(e.target.value)} 
+                  style={{ marginTop: "10px" }}
+                />
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginTop: "1.5rem" }}>
+            <h3 style={{ fontSize: "1.1rem", marginBottom: "1rem", color: "var(--primary-color)" }}>Strict Dealbreaker</h3>
+            <div className={styles.formGroup}>
+              <select className={styles.input} value={dealbreaker} onChange={e => setDealbreaker(e.target.value)}>
+                <option value="">No Dealbreakers (Show Everyone)</option>
+                <option value="Non-Smoker">Must be a Non-Smoker</option>
+                <option value="Non-Drinker">Must be a Non-Drinker</option>
+                <option value="Serious Relationship">Must want a Serious Relationship</option>
+                <option value="Verified">Must be Verified</option>
+              </select>
+              <p style={{fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px"}}>Anyone who violates this dealbreaker will be permanently hidden from your feed.</p>
             </div>
           </div>
 
@@ -626,6 +716,31 @@ export default function Profile() {
             <button className="btn-glass" onClick={handleLogout} style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.2)" }}>
               Log Out
             </button>
+          </div>
+        </div>
+      )}
+
+      {showVerificationModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+          <div style={{ background: "var(--bg-secondary)", padding: "24px", borderRadius: "16px", maxWidth: "400px", width: "100%", border: "1px solid var(--border-color)" }}>
+            <h3 style={{ fontSize: "1.2rem", marginBottom: "16px", color: "var(--primary-color)" }}>Get Verified</h3>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "16px", lineHeight: 1.5 }}>
+              To get the blue checkmark, please provide a link to a selfie of you holding up two fingers (peace sign ✌️). Our admins will review this to verify your identity.
+            </p>
+            <div className={styles.formGroup}>
+              <label>Selfie Image URL</label>
+              <input 
+                type="url" 
+                className={styles.input} 
+                placeholder="https://example.com/my-selfie.jpg"
+                value={verificationSelfieUrl}
+                onChange={e => setVerificationSelfieUrl(e.target.value)}
+              />
+            </div>
+            <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={submitVerification}>Submit</button>
+              <button className="btn-glass" style={{ flex: 1 }} onClick={() => setShowVerificationModal(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
