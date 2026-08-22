@@ -16,6 +16,8 @@ type Message = {
   createdAt: any;
   isRead?: boolean;
   reaction?: string;
+  type?: "text" | "date_proposal";
+  metadata?: any;
 };
 
 function ChatContent() {
@@ -34,6 +36,9 @@ function ChatContent() {
   const [targetLookingFor, setTargetLookingFor] = useState("");
   const [isTargetTyping, setIsTargetTyping] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [dateLocation, setDateLocation] = useState("");
+  const [dateTime, setDateTime] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   let typingTimeout: NodeJS.Timeout | null = null;
 
@@ -152,6 +157,28 @@ function ChatContent() {
     }
   };
 
+  const sendDateProposal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !targetId || !dateLocation || !dateTime) return;
+    const chatId = currentUser.uid < targetId ? `${currentUser.uid}_${targetId}` : `${targetId}_${currentUser.uid}`;
+    
+    try {
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        text: `📅 Date Proposal: ${dateLocation} @ ${dateTime}`,
+        senderId: currentUser.uid,
+        createdAt: serverTimestamp(),
+        isRead: false,
+        type: "date_proposal",
+        metadata: { location: dateLocation, time: dateTime }
+      });
+      setShowDateModal(false);
+      setDateLocation("");
+      setDateTime("");
+    } catch (err) {
+      console.error("Error sending date proposal", err);
+    }
+  };
+
   const handleDoubleClickMessage = async (msgId: string) => {
     if (!currentUser || !targetId) return;
     const chatId = currentUser.uid < targetId 
@@ -189,7 +216,6 @@ function ChatContent() {
 
   const generateIcebreaker = () => {
     setIsGenerating(true);
-    
     // Simulate AI generation delay
     setTimeout(() => {
       const prompts = [
@@ -197,12 +223,14 @@ function ChatContent() {
         `Quick question for you ${targetName}: what's the most controversial food opinion you have?`,
         `Okay ${targetName}, two truths and a lie. Go!`,
         `I have a theory that everyone has a secret useless talent. What's yours, ${targetName}?`,
-        `Hey ${targetName}! What's the best thing that happened to you this week?`
+        `Hey ${targetName}! What's the best thing that happened to you this week?`,
+        ...(targetLookingFor ? [`So ${targetName}, I see you're looking for "${targetLookingFor}". What's your biggest green flag?`] : []),
+        `I asked my AI Wingman what to say to ${targetName} and it told me to just be myself. How am I doing so far? ✨`
       ];
       const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
       setInputText(randomPrompt);
       setIsGenerating(false);
-    }, 600);
+    }, 1500);
   };
 
   const handleReportMessage = async (msgId: string, text: string) => {
@@ -248,6 +276,16 @@ function ChatContent() {
 
   return (
     <main className={styles.container}>
+      <div style={{ display: "flex", alignItems: "center", padding: "16px", background: "var(--bg-color)", borderBottom: "1px solid var(--border-color)", gap: "12px", position: "sticky", top: 0, zIndex: 10 }}>
+        {targetImg && <img src={targetImg} alt={targetName} style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />}
+        <div style={{ flex: 1 }}>
+          <h2 style={{ margin: 0, fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+            {targetName} {targetVerified && <span style={{ color: "#3b82f6", fontSize: "0.9rem" }}>✓</span>}
+          </h2>
+          {targetOnline && <span style={{ fontSize: "0.75rem", color: "#10b981", display: "flex", alignItems: "center", gap: "4px" }}><div style={{ width: "8px", height: "8px", background: "#10b981", borderRadius: "50%" }}></div> Online</span>}
+        </div>
+      </div>
+
       {targetLookingFor && (
         <div style={{ background: "var(--bg-secondary)", padding: "8px", textAlign: "center", fontSize: "0.85rem", color: "var(--primary-color)", borderBottom: "1px solid var(--border-color)" }}>
           <span style={{ fontWeight: 600 }}>{targetName} is looking for:</span> {targetLookingFor}
@@ -270,7 +308,16 @@ function ChatContent() {
                   style={{ position: "relative", cursor: !isMe ? "pointer" : "default" }}
                   title={!isMe ? "Double click to heart" : ""}
                 >
-                  {msg.text}
+                  {msg.type === "date_proposal" ? (
+                    <div style={{ background: "var(--glass-bg)", border: "1px solid var(--primary-color)", borderRadius: "12px", padding: "12px", minWidth: "200px" }}>
+                      <div style={{ fontSize: "2rem", textAlign: "center", marginBottom: "8px" }}>📅</div>
+                      <div style={{ fontWeight: "bold", textAlign: "center", marginBottom: "4px" }}>Date Proposal</div>
+                      <div style={{ fontSize: "0.9rem", margin: "4px 0" }}><strong>Where:</strong> {msg.metadata?.location}</div>
+                      <div style={{ fontSize: "0.9rem", margin: "4px 0" }}><strong>When:</strong> {msg.metadata?.time}</div>
+                    </div>
+                  ) : (
+                    msg.text
+                  )}
                   {msg.reaction && (
                     <div style={{ position: "absolute", bottom: "-10px", right: "-10px", background: "white", borderRadius: "50%", padding: "2px", fontSize: "0.8rem", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
                       {msg.reaction}
@@ -316,11 +363,19 @@ function ChatContent() {
             <button 
               type="button" 
               className={styles.icebreakerBtn}
+              onClick={() => setShowDateModal(true)}
+              title="Propose Date"
+            >
+              📅
+            </button>
+            <button 
+              type="button" 
+              className={styles.icebreakerBtn}
               onClick={generateIcebreaker}
               disabled={isGenerating}
-              title="AI Icebreaker"
+              title="AI Wingman"
             >
-              {isGenerating ? "..." : "🪄"}
+              {isGenerating ? "..." : "✨"}
             </button>
             <input 
               type="text" 
@@ -335,6 +390,43 @@ function ChatContent() {
           </>
         )}
       </form>
+
+      {/* Date Proposal Modal */}
+      {showDateModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "var(--bg-color)", padding: "24px", borderRadius: "16px", width: "90%", maxWidth: "400px", border: "1px solid var(--glass-border)" }}>
+            <h3 style={{ marginTop: 0, marginBottom: "16px", color: "var(--primary-color)" }}>📅 Propose a Date</h3>
+            <form onSubmit={sendDateProposal} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "4px" }}>Location / Activity</label>
+                <input 
+                  type="text" 
+                  value={dateLocation} 
+                  onChange={(e) => setDateLocation(e.target.value)} 
+                  placeholder="e.g. Starbucks on 5th Ave" 
+                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--bg-secondary)", color: "var(--text-color)" }}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "4px" }}>Date & Time</label>
+                <input 
+                  type="text" 
+                  value={dateTime} 
+                  onChange={(e) => setDateTime(e.target.value)} 
+                  placeholder="e.g. Friday @ 6:00 PM" 
+                  style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--glass-border)", background: "var(--bg-secondary)", color: "var(--text-color)" }}
+                  required
+                />
+              </div>
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button type="button" onClick={() => setShowDateModal(false)} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1 }}>Send Proposal</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

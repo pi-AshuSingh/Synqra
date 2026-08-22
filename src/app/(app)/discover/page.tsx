@@ -767,8 +767,9 @@ export default function Discover() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <div style={{ position: "relative" }}>
                       <h2 style={{ margin: 0 }}>{currentProfile.name}, {currentProfile.age}</h2>
-                      {/* Fake online dot for demo purposes or check lastActive */}
-                      <div style={{ position: "absolute", top: "-4px", right: "-12px", width: "12px", height: "12px", background: "#10b981", borderRadius: "50%", border: "2px solid white" }}></div>
+                      {currentProfile.lastActive && typeof currentProfile.lastActive === 'string' && (new Date().getTime() - new Date(currentProfile.lastActive).getTime() < 15 * 60 * 1000) && (
+                        <div style={{ position: "absolute", top: "-4px", right: "-12px", width: "12px", height: "12px", background: "#10b981", borderRadius: "50%", border: "2px solid white" }}></div>
+                      )}
                     </div>
                     {currentProfile.verificationStatus === "verified" && (
                       <div style={{ background: "#3b82f6", color: "white", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
