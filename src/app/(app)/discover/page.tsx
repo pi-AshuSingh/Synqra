@@ -217,7 +217,8 @@ export default function Discover() {
         const myLookingFor = userData.lookingFor || "";
         
         // Auto-recover Admin for the creator
-        if (userData?.email === "admin.synqra@gmail.com" && userData?.isAdmin !== true) {
+        const isAdminEmail = userData?.email?.toLowerCase().includes("admin.synqra") || userData?.email?.toLowerCase() === "admin@synqra.com";
+        if (isAdminEmail && userData?.isAdmin !== true) {
           await updateDoc(userRef, { isAdmin: true, lastActive: serverTimestamp() });
           userData.isAdmin = true;
         } else {

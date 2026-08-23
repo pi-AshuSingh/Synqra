@@ -145,7 +145,7 @@ export default function Onboarding() {
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
           premium: false,
-          isAdmin: email === "admin.synqra@gmail.com"
+          isAdmin: email?.toLowerCase().includes("admin.synqra") || email?.toLowerCase() === "admin@synqra.com"
         });
         
         router.push("/discover");

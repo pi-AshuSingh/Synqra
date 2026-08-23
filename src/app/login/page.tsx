@@ -29,8 +29,8 @@ export default function Login() {
       const { db } = await import("@/lib/firebase");
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
-      const isAdminUser = (userDoc.exists() && userDoc.data().isAdmin === true) || 
-                          userCredential.user.email === "admin.synqra@gmail.com";
+      const isAdminEmail = userCredential.user.email?.toLowerCase().includes("admin.synqra") || userCredential.user.email?.toLowerCase() === "admin@synqra.com";
+      const isAdminUser = (userDoc.exists() && userDoc.data().isAdmin === true) || isAdminEmail;
       
       if (isAdminUser) {
         router.push("/admin");
@@ -74,12 +74,12 @@ export default function Login() {
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
           premium: false,
-          isAdmin: userCredential.user.email === "admin.synqra@gmail.com"
+          isAdmin: userCredential.user.email?.toLowerCase().includes("admin.synqra") || userCredential.user.email?.toLowerCase() === "admin@synqra.com"
         });
       }
       
-      const isAdminUser = userCredential.user.email === "admin.synqra@gmail.com" || 
-                          (userDoc.exists() && userDoc.data()?.isAdmin === true);
+      const isAdminEmail = userCredential.user.email?.toLowerCase().includes("admin.synqra") || userCredential.user.email?.toLowerCase() === "admin@synqra.com";
+      const isAdminUser = isAdminEmail || (userDoc.exists() && userDoc.data()?.isAdmin === true);
 
       if (isAdminUser) {
         router.push("/admin");

@@ -40,7 +40,8 @@ export default function AdminDashboard() {
         // Check if user is admin
         const userDoc = await getDoc(doc(db, "users", user.uid));
         const data = userDoc.data();
-        if ((userDoc.exists() && data?.isAdmin === true) || user.email === "admin.synqra@gmail.com") {
+        const isAdminEmail = user.email?.toLowerCase().includes("admin.synqra") || user.email?.toLowerCase() === "admin@synqra.com";
+        if ((userDoc.exists() && data?.isAdmin === true) || isAdminEmail) {
           setIsAdmin(true);
           
           // Auto-recover Admin status if not set in DB
@@ -71,7 +72,8 @@ export default function AdminDashboard() {
       const usersData: User[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (data.email === "admin.synqra@gmail.com") {
+        const isUserAdminEmail = data.email?.toLowerCase().includes("admin.synqra") || data.email?.toLowerCase() === "admin@synqra.com";
+        if (isUserAdminEmail) {
           data.isAdmin = true;
         }
         usersData.push({ id: doc.id, ...data } as User);
