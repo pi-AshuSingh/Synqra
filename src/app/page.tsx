@@ -206,28 +206,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.downloadSection}>
-        <div className={styles.downloadContent}>
-          <h2 className={styles.sectionTitle} style={{ color: "white" }}>Ready to find your match?</h2>
-          <p style={{ color: "#d1d5db", fontSize: "1.1rem", marginBottom: "30px" }}>Join thousands of singles who are already using Synqra to build meaningful relationships.</p>
-          <div className={styles.downloadButtons}>
-            <button className={styles.storeBtn}>
-              <span style={{ fontSize: "1.5rem" }}>🍎</span>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>Download on the</div>
-                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>App Store</div>
-              </div>
-            </button>
-            <button className={styles.storeBtn}>
-              <span style={{ fontSize: "1.5rem" }}>▶️</span>
-              <div style={{ textAlign: "left" }}>
-                <div style={{ fontSize: "0.7rem", opacity: 0.8 }}>GET IT ON</div>
-                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>Google Play</div>
-              </div>
-            </button>
-          </div>
-        </div>
-      </section>
+
 
       <section className={styles.vipSection}>
         <div className={styles.vipLeft}>
