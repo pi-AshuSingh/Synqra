@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const navItems = [
+  const userNavItems = [
     { name: "Discover", path: "/discover", icon: "🔥" },
     { name: "Matches", path: "/matches", icon: "💖" },
     { name: "Sparks", path: "/sparks", icon: "✨" },
@@ -35,6 +35,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     { name: "Premium", path: "/premium", icon: "⭐" },
     { name: "Profile", path: "/profile", icon: "👤" },
   ];
+
+  const adminNavItems = [
+    { name: "Dashboard", path: "/admin", icon: "📊" },
+    { name: "Back to App", path: "/discover", icon: "🔙" },
+  ];
+
+  const navItems = pathname.startsWith("/admin") ? adminNavItems : userNavItems;
 
   return (
     <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", minHeight: "100vh", backgroundColor: "var(--bg-color)" }}>
