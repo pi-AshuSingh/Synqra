@@ -185,23 +185,23 @@ export default function Home() {
       <section className={styles.marqueeSection}>
         <div className={styles.marqueeContainer}>
           <div className={styles.marqueeContent}>
-            <span className={styles.badge}>☕ Coffee Lover</span>
-            <span className={styles.badge}>✈️ World Traveler</span>
-            <span className={styles.badge}>🎨 Art Enthusiast</span>
-            <span className={styles.badge}>🎸 Live Music</span>
-            <span className={styles.badge}>🐕 Dog Parent</span>
-            <span className={styles.badge}>🧘‍♀️ Mindfulness</span>
-            <span className={styles.badge}>🧗‍♂️ Bouldering</span>
-            <span className={styles.badge}>🍷 Wine Tasting</span>
+            <span className={styles.badge}>💍 Serious Relationship</span>
+            <span className={styles.badge}>🥂 Casual Dating</span>
+            <span className={styles.badge}>🌍 New in Town</span>
+            <span className={styles.badge}>💫 Seeking Soulmate</span>
+            <span className={styles.badge}>💕 Long-term Dating</span>
+            <span className={styles.badge}>🤝 Just Friends</span>
+            <span className={styles.badge}>✨ Genuine Connections</span>
+            <span className={styles.badge}>🎯 Intentional Dating</span>
             {/* DUPLICATE FOR INFINITE EFFECT */}
-            <span className={styles.badge}>☕ Coffee Lover</span>
-            <span className={styles.badge}>✈️ World Traveler</span>
-            <span className={styles.badge}>🎨 Art Enthusiast</span>
-            <span className={styles.badge}>🎸 Live Music</span>
-            <span className={styles.badge}>🐕 Dog Parent</span>
-            <span className={styles.badge}>🧘‍♀️ Mindfulness</span>
-            <span className={styles.badge}>🧗‍♂️ Bouldering</span>
-            <span className={styles.badge}>🍷 Wine Tasting</span>
+            <span className={styles.badge}>💍 Serious Relationship</span>
+            <span className={styles.badge}>🥂 Casual Dating</span>
+            <span className={styles.badge}>🌍 New in Town</span>
+            <span className={styles.badge}>💫 Seeking Soulmate</span>
+            <span className={styles.badge}>💕 Long-term Dating</span>
+            <span className={styles.badge}>🤝 Just Friends</span>
+            <span className={styles.badge}>✨ Genuine Connections</span>
+            <span className={styles.badge}>🎯 Intentional Dating</span>
           </div>
         </div>
       </section>
