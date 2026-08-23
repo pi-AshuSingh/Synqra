@@ -30,13 +30,15 @@ export default function Login() {
       const { db } = await import("@/lib/firebase");
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       
-      if (loginRole === "admin") {
-        if ((userDoc.exists() && userDoc.data().isAdmin === true) || userCredential.user.email === "ashu.chhapra.br@gmail.com") {
-          router.push("/admin");
-        } else {
-          await auth.signOut();
-          setError("Access Denied: You do not have Admin privileges.");
-        }
+      const isAdminUser = (userDoc.exists() && userDoc.data().isAdmin === true) || 
+                          userCredential.user.email === "ashu.chhapra.br@gmail.com" || 
+                          userCredential.user.email === "admin.synqra@gmail.com";
+      
+      if (isAdminUser) {
+        router.push("/admin");
+      } else if (loginRole === "admin") {
+        await auth.signOut();
+        setError("Access Denied: You do not have Admin privileges.");
       } else {
         router.push("/discover");
       }
@@ -77,17 +79,19 @@ export default function Login() {
           maxAgePref: 99,
           createdAt: new Date().toISOString(),
           premium: false,
-          isAdmin: userCredential.user.email === "ashu.chhapra.br@gmail.com"
+          isAdmin: userCredential.user.email === "ashu.chhapra.br@gmail.com" || userCredential.user.email === "admin.synqra@gmail.com"
         });
       }
       
-      if (loginRole === "admin") {
-        if (userCredential.user.email === "ashu.chhapra.br@gmail.com" || (userDoc.exists() && userDoc.data()?.isAdmin === true)) {
-          router.push("/admin");
-        } else {
-          await auth.signOut();
-          setError("Access Denied: You do not have Admin privileges.");
-        }
+      const isAdminUser = userCredential.user.email === "ashu.chhapra.br@gmail.com" || 
+                          userCredential.user.email === "admin.synqra@gmail.com" || 
+                          (userDoc.exists() && userDoc.data()?.isAdmin === true);
+
+      if (isAdminUser) {
+        router.push("/admin");
+      } else if (loginRole === "admin") {
+        await auth.signOut();
+        setError("Access Denied: You do not have Admin privileges.");
       } else {
         router.push("/discover");
       }
