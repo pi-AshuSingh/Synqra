@@ -273,7 +273,7 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.successCard}>
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Meaningful Conversations" className={styles.successImg} />
+            <img src="https://images.unsplash.com/photo-1595399874399-10f2444c4eb2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Meaningful Conversations" className={styles.successImg} />
             <div className={styles.successContent}>
               <h3>Meaningful Conversations</h3>
               <p>With our Icebreaker Prompts and Aura Tags, starting a conversation is natural, easy, and goes beyond just a simple "hello".</p>
