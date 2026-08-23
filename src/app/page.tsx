@@ -280,7 +280,7 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.successCard}>
-            <img src="https://images.unsplash.com/photo-1621801306185-0dd50e82c589?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Absolute Privacy" className={styles.successImg} />
+            <img src="https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Absolute Privacy" className={styles.successImg} />
             <div className={styles.successContent}>
               <h3>Absolute Privacy</h3>
               <p>Your data is protected. With Premium Incognito Mode, you have complete control over who gets to see your profile.</p>
