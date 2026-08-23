@@ -39,8 +39,16 @@ export default function AdminDashboard() {
       try {
         // Check if user is admin
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if ((userDoc.exists() && userDoc.data().isAdmin === true) || user.email === "ashu.chhapra.br@gmail.com" || user.email === "admin.synqra@gmail.com") {
+        const data = userDoc.data();
+        if ((userDoc.exists() && data?.isAdmin === true) || user.email === "ashu.chhapra.br@gmail.com" || user.email === "admin.synqra@gmail.com") {
           setIsAdmin(true);
+          
+          // Auto-recover Admin status if not set in DB
+          if (data && data.isAdmin !== true) {
+            const { updateDoc } = await import("firebase/firestore");
+            await updateDoc(doc(db, "users", user.uid), { isAdmin: true });
+          }
+
           fetchUsers();
           fetchReports();
           fetchVerificationRequests();
@@ -62,7 +70,11 @@ export default function AdminDashboard() {
       const querySnapshot = await getDocs(collection(db, "users"));
       const usersData: User[] = [];
       querySnapshot.forEach((doc) => {
-        usersData.push({ id: doc.id, ...doc.data() } as User);
+        const data = doc.data();
+        if (data.email === "ashu.chhapra.br@gmail.com" || data.email === "admin.synqra@gmail.com") {
+          data.isAdmin = true;
+        }
+        usersData.push({ id: doc.id, ...data } as User);
       });
       // Sort newest first
       usersData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
