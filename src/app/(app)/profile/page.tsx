@@ -619,8 +619,8 @@ export default function Profile() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 </button>
                 <div style={{ display: "flex", alignItems: "center", gap: "3px", height: "24px", flex: 1 }}>
-                  {[...Array(20)].map((_, i) => (
-                    <div key={i} style={{ flex: 1, height: `${Math.max(10, Math.random() * 24)}px`, background: profileData?.isPremium ? "var(--primary-color)" : "#4b5563", borderRadius: "2px", opacity: 0.7 }} />
+                  {[12, 18, 14, 22, 10, 24, 16, 20, 14, 18, 22, 12, 16, 20, 14, 18, 24, 12, 16, 20].map((h, i) => (
+                    <div key={i} style={{ flex: 1, height: `${h}px`, background: profileData?.isPremium ? "var(--primary-color)" : "#4b5563", borderRadius: "2px", opacity: 0.7 }} />
                   ))}
                 </div>
                 {!profileData?.isPremium && (
